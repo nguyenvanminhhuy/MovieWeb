@@ -1,0 +1,16 @@
+package com.example.movie_backend.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class StudioResponse {
+    String id;
+    String name;
+    String description;
+    String logo;
+}
