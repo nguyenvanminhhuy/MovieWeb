@@ -5,7 +5,6 @@ import com.example.movie_backend.dto.response.ReportResponse;
 import com.example.movie_backend.entity.Report;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring")
 public interface ReportMapper {

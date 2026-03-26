@@ -49,13 +49,13 @@ public class MovieServiceImpl implements MovieService {
 
         if (request.getStudioId() != null) {
             var studio = studioRepository.findById(request.getStudioId())
-                    .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+                    .orElseThrow(() -> new AppException(ErrorCode.STUDIO_NOT_FOUND));
             movie.setStudio(studio);
         }
 
         if (request.getFranchiseId() != null) {
             var franchise = franchiseRepository.findById(request.getFranchiseId())
-                    .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+                    .orElseThrow(() -> new AppException(ErrorCode.FRANCHISE_NOT_FOUND));
             movie.setFranchise(franchise);
         }
 
@@ -116,8 +116,14 @@ public class MovieServiceImpl implements MovieService {
 
         if (request.getStudioId() != null) {
             var studio = studioRepository.findById(request.getStudioId())
-                    .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+                    .orElseThrow(() -> new AppException(ErrorCode.STUDIO_NOT_FOUND));
             movie.setStudio(studio);
+        }
+
+        if (request.getFranchiseId() != null) {
+            var franchise = franchiseRepository.findById(request.getFranchiseId())
+                    .orElseThrow(() -> new AppException(ErrorCode.FRANCHISE_NOT_FOUND));
+            movie.setFranchise(franchise);
         }
 
         if (request.getGenreIds() != null) {
@@ -125,12 +131,18 @@ public class MovieServiceImpl implements MovieService {
             movie.setGenres(new HashSet<>(genres));
         }
 
-        return movieMapper.toMovieResponse(movieRepository.save(movie));
+        Movie updatedMovie = movieRepository.save(movie);
+        auditLogService.log("UPDATE_MOVIE", "ID: " + id + ", Title: " + updatedMovie.getTitle());
+
+        return movieMapper.toMovieResponse(updatedMovie);
     }
 
     @Override
     public void delete(String id) {
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
         movieRepository.deleteById(id);
+        auditLogService.log("DELETE_MOVIE", "ID: " + id + ", Title: " + movie.getTitle());
     }
 
     @Override
@@ -205,25 +217,19 @@ public class MovieServiceImpl implements MovieService {
                 .orElseThrow(() -> new AppException(ErrorCode.MOVIE_NOT_FOUND));
 
         // Find movies with same genres, excluding current movie
-        // This is a simplified recommendation engine
         List<String> genreIds = movie.getGenres().stream().map(g -> g.getId()).toList();
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("views").descending());
 
-        // Using a simplified approach: just get movies that share at least one genre
-        // In a real app, you'd use a more complex JPQL or native query for better
-        // relevance
-        var pageData = movieRepository.findAll(pageable); // Placeholder logic
+        // Call repository to find movies sharing genres
+        var pageData = movieRepository.findRelatedMovies(genreIds, movieId, pageable);
 
         return PageResponse.<MovieResponse>builder()
                 .currentPage(page)
                 .pageSize(size)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .data(pageData.getContent().stream()
-                        .filter(m -> !m.getId().equals(movieId))
-                        .map(movieMapper::toMovieResponse)
-                        .toList())
+                .data(pageData.getContent().stream().map(movieMapper::toMovieResponse).toList())
                 .build();
     }
 }

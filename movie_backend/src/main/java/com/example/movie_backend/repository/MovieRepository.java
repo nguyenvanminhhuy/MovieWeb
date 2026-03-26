@@ -28,4 +28,9 @@ public interface MovieRepository extends JpaRepository<Movie, String> {
             @Param("type") MovieType type,
             @Param("status") MovieStatus status,
             Pageable pageable);
+
+    @Query("SELECT DISTINCT m FROM Movie m JOIN m.genres g WHERE g.id IN :genreIds AND m.id <> :movieId")
+    Page<Movie> findRelatedMovies(@Param("genreIds") java.util.List<String> genreIds,
+            @Param("movieId") String movieId,
+            Pageable pageable);
 }

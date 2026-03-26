@@ -24,6 +24,7 @@ public class CommentController {
 
     @Operation(summary = "Viết bình luận mới")
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<CommentResponse> create(@RequestBody CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
                 .result(commentService.create(request))
@@ -32,6 +33,7 @@ public class CommentController {
 
     @Operation(summary = "Thích bình luận")
     @PostMapping("/{id}/like")
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<CommentResponse> like(@PathVariable String id) {
         return ApiResponse.<CommentResponse>builder()
                 .result(commentService.likeComment(id))
