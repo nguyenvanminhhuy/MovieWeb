@@ -21,6 +21,7 @@ public enum ErrorCode {
     GENRE_NOT_FOUND(1013, "Genre not found", HttpStatus.NOT_FOUND),
     EPISODE_NOT_FOUND(1014, "Episode not found", HttpStatus.NOT_FOUND),
     COMMENT_NOT_FOUND(1015, "Comment not found", HttpStatus.NOT_FOUND),
+    ROLE_NOT_FOUND(1016, "Role not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
