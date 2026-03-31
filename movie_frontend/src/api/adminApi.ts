@@ -11,25 +11,25 @@ import type {
 
 // Movie Management
 export function getAllMoviesAdmin(page = 1, size = 10) {
-  return apiFetch<PageResponse<MovieResponse>>(`/admin/movies?page=${page}&size=${size}`)
+  return apiFetch<PageResponse<MovieResponse>>(`/movies?page=${page}&size=${size}`)
 }
 
 export function createMovie(data: Partial<MovieResponse>) {
-  return apiFetch<MovieResponse>('/admin/movies', {
+  return apiFetch<MovieResponse>('/movies', {
     method: 'POST',
     body: JSON.stringify(data)
   })
 }
 
 export function updateMovie(id: string, data: Partial<MovieResponse>) {
-  return apiFetch<MovieResponse>(`/admin/movies/${id}`, {
+  return apiFetch<MovieResponse>(`/movies/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data)
   })
 }
 
 export function deleteMovie(id: string) {
-  return apiFetch<null>(`/admin/movies/${id}`, {
+  return apiFetch<null>(`/movies/${id}`, {
     method: 'DELETE'
   })
 }

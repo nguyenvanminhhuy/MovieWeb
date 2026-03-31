@@ -4,15 +4,36 @@ import AppShell from '../../components/AppShell.vue'
 import * as adminApi from '../../api/adminApi'
 import type { MovieResponse } from '../../api/types'
 import { mediaUrl } from '../../utils/media'
+import {
+  seedTopAnime,
+  checkBackendStatus,
+  seedFromKitsu,
+  seedFromTMDb,
+  seedFromTVMaze,
+  seedFromAniList,
+} from '../../utils/animeSeeder'
 
 const movies = ref<MovieResponse[]>([])
 const loading = ref(true)
+const seeding = ref(false)
+const serverOnline = ref(true)
 const err = ref('')
 const page = ref(1)
 const totalPages = ref(1)
 
 async function fetchMovies() {
   loading.value = true
+  err.value = ''
+
+  // 1. Kiểm tra Backend trước
+  const isOnline = await checkBackendStatus()
+  serverOnline.value = isOnline
+  if (!isOnline) {
+    err.value = 'LỖI KẾT NỐI: Backend (Cổng 8080) chưa được bật. Hãy khởi động server Java của bạn.'
+    loading.value = false
+    return
+  }
+
   try {
     const res = await adminApi.getAllMoviesAdmin(page.value, 10)
     movies.value = res.data
@@ -21,6 +42,46 @@ async function fetchMovies() {
     err.value = e instanceof Error ? e.message : 'Không thể tải danh sách phim'
   } finally {
     loading.value = false
+  }
+}
+
+async function handleSeed() {
+  const source = prompt(
+    'Chọn nguồn nạp Anime/Phim:\n1: Jikan (MyAnimeList)\n2: Kitsu (Anime)\n3: TMDb (Phim lẻ)\n4: TVMaze (Phim US/UK)\n5: AniList (Anime Xịn)',
+    '1',
+  )
+  if (!source) return
+
+  const limitStr = prompt('Nhập số lượng muốn lấy (ví dụ: 10):', '10')
+  const limit = parseInt(limitStr || '0')
+  if (isNaN(limit) || limit <= 0) return
+
+  const pageStr = prompt('Nhập trang muốn lấy (Trang 1: Top 1-50, Trang 2: Top 51-100...):', '1')
+  const pageToSeed = parseInt(pageStr || '1') || 1
+
+  seeding.value = true
+  try {
+    let count = 0
+    if (source === '1') {
+      count = await seedTopAnime(limit) // Jikan mặc định lấy top
+    } else if (source === '2') {
+      count = await seedFromKitsu(limit)
+    } else if (source === '3') {
+      const key = prompt('Nhập TMDb API Key của bạn:')
+      if (!key) throw new Error('Cần có API Key để nạp từ TMDb')
+      count = await seedFromTMDb(limit, key)
+    } else if (source === '4') {
+      count = await seedFromTVMaze(limit, pageToSeed - 1) // TVMaze page bắt đầu từ 0
+    } else if (source === '5') {
+      count = await seedFromAniList(limit, pageToSeed)
+    }
+
+    alert(`XONG! Đã nạp thành công ${count} bộ dữ liệu từ trang ${pageToSeed} vào hệ thống.`)
+    await fetchMovies()
+  } catch (e) {
+    alert(e instanceof Error ? e.message : 'Lỗi nạp dữ liệu')
+  } finally {
+    seeding.value = false
   }
 }
 
@@ -34,6 +95,11 @@ async function handleDelete(id: string) {
   }
 }
 
+function changePage(p: number) {
+  page.value = p
+  fetchMovies()
+}
+
 onMounted(fetchMovies)
 </script>
 
@@ -42,18 +108,78 @@ onMounted(fetchMovies)
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold">Quản lý phim</h1>
-          <p class="mt-1 text-zinc-400">Danh sách các phim trên hệ thống</p>
+          <h1 class="text-3xl font-bold flex items-center gap-3">
+            Quản lý phim
+            <span
+              v-if="!serverOnline"
+              class="text-xs font-normal bg-red-500/10 text-red-400 px-2 py-0.5 rounded border border-red-500/20"
+            >
+              Backend Offline 🔴
+            </span>
+            <span
+              v-else
+              class="text-xs font-normal bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20"
+            >
+              Backend Online 🟢
+            </span>
+          </h1>
+          <p class="mt-1 text-zinc-400">Điều chỉnh và nạp dữ liệu phim cho hệ thống</p>
         </div>
-        <button
-          class="rounded-xl bg-violet-600 px-6 py-2.5 font-semibold text-white hover:bg-violet-500 shadow-lg shadow-violet-500/20"
-        >
-          Thêm phim mới
-        </button>
+
+        <div class="flex gap-3">
+          <button
+            @click="handleSeed()"
+            :disabled="seeding || !serverOnline"
+            :class="[
+              'rounded-xl border border-zinc-700 bg-zinc-800 px-5 py-2.5 font-semibold text-zinc-300 transition-all focus:ring-2 focus:ring-violet-500/50 outline-none',
+              !serverOnline || seeding
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:bg-zinc-700 active:scale-95',
+            ]"
+          >
+            <span v-if="seeding" class="flex items-center gap-2">
+              <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  fill="none"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Đang nạp...
+            </span>
+            <span v-else>Tự động nạp dữ liệu</span>
+          </button>
+
+          <button
+            class="rounded-xl bg-violet-600 px-6 py-2.5 font-semibold text-white hover:bg-violet-500 shadow-lg shadow-violet-500/20 active:scale-95 transition-all"
+          >
+            Thêm mới
+          </button>
+        </div>
       </div>
 
-      <div v-if="err" class="rounded-xl bg-red-950/50 p-4 text-red-300 ring-1 ring-red-500/30">
-        {{ err }}
+      <div
+        v-if="err"
+        class="rounded-xl border border-red-500/30 bg-red-950/20 p-4 flex items-center gap-3"
+      >
+        <div class="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
+        <p class="text-sm font-medium text-red-400">{{ err }}</p>
+        <button
+          v-if="!serverOnline"
+          @click="fetchMovies()"
+          class="ml-auto text-xs underline text-red-400 hover:text-white"
+        >
+          Thử lại
+        </button>
       </div>
 
       <div
@@ -153,10 +279,7 @@ onMounted(fetchMovies)
         <button
           v-for="p in totalPages"
           :key="p"
-          @click="
-            page = p
-            fetchMovies()
-          "
+          @click="changePage(p)"
           :class="[
             'px-4 py-2 rounded-lg font-medium transition-all',
             page === p ? 'bg-violet-600 text-white' : 'bg-white/5 text-zinc-400 hover:bg-white/10',
