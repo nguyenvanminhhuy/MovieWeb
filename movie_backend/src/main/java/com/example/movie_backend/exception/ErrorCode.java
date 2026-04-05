@@ -16,6 +16,12 @@ public enum ErrorCode {
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
     MOVIE_NOT_FOUND(1009, "Movie not found", HttpStatus.NOT_FOUND),
     INVALID_EMAIL(1010, "Invalid email format", HttpStatus.BAD_REQUEST),
+    STUDIO_NOT_FOUND(1011, "Studio not found", HttpStatus.NOT_FOUND),
+    FRANCHISE_NOT_FOUND(1012, "Franchise not found", HttpStatus.NOT_FOUND),
+    GENRE_NOT_FOUND(1013, "Genre not found", HttpStatus.NOT_FOUND),
+    EPISODE_NOT_FOUND(1014, "Episode not found", HttpStatus.NOT_FOUND),
+    COMMENT_NOT_FOUND(1015, "Comment not found", HttpStatus.NOT_FOUND),
+    ROLE_NOT_FOUND(1016, "Role not found", HttpStatus.NOT_FOUND),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {

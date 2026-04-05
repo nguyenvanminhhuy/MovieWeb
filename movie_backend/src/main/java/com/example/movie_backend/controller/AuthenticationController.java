@@ -2,6 +2,8 @@ package com.example.movie_backend.controller;
 
 import com.example.movie_backend.dto.request.AuthenticationRequest;
 import com.example.movie_backend.dto.request.IntrospectRequest;
+import com.example.movie_backend.dto.request.LogoutRequest;
+import com.example.movie_backend.dto.request.RefreshRequest;
 import com.example.movie_backend.dto.response.ApiResponse;
 import com.example.movie_backend.dto.response.AuthenticationResponse;
 import com.example.movie_backend.dto.response.IntrospectResponse;
@@ -42,6 +44,24 @@ public class AuthenticationController {
             throws JOSEException, ParseException {
         var result = authenticationService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
+                .result(result)
+                .build();
+    }
+
+    @Operation(summary = "Đăng xuất tài khoản", description = "Vô hiệu hóa Token hiện tại")
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest request)
+            throws JOSEException, ParseException {
+        authenticationService.logout(request);
+        return ApiResponse.<Void>builder().build();
+    }
+
+    @Operation(summary = "Làm mới Token", description = "Sử dụng Refresh Token để lấy Access Token mới")
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> refresh(@RequestBody RefreshRequest request)
+            throws JOSEException, ParseException {
+        var result = authenticationService.refresh(request);
+        return ApiResponse.<AuthenticationResponse>builder()
                 .result(result)
                 .build();
     }

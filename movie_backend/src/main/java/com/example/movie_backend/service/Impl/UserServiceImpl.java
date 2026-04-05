@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +55,15 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        var roles = roleRepository.findAllById(request.getRoles());
+        var requestedRoles = request.getRoles() == null ? Set.<String>of() : request.getRoles();
+        var roles = roleRepository.findAllById((Iterable<String>) requestedRoles);
+
+        if (roles.isEmpty()) {
+            var userRole = roleRepository.findByName("USER")
+                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+            roles = List.of(userRole);
+        }
+
         user.setRoles(new HashSet<>(roles));
 
         return userMapper.toUserResponse(userRepository.save(user));

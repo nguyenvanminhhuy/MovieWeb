@@ -23,6 +23,7 @@ public class ReviewController {
 
     @Operation(summary = "Viết đánh giá mới")
     @PostMapping
+    @PreAuthorize("isAuthenticated()")
     ApiResponse<ReviewResponse> create(@RequestBody @Valid ReviewRequest request) {
         return ApiResponse.<ReviewResponse>builder()
                 .result(reviewService.create(request))
