@@ -49,7 +49,7 @@ _Yêu cầu đăng nhập._
 | :-- | :---------- | :----------------------- | :-------------------------------------------- |
 | 18  | `GET`       | `/users/my-info`         | Lấy thông tin tài khoản của chính mình.       |
 | 19  | `PUT`       | `/users/update-profile`  | Tự cập nhật Họ tên, Avatar và Mật khẩu.       |
-| 20  | `POST`      | `/users`                 | API đăng ký tài khoản người dùng mới.         |
+| 20  | `POST`      | `/users`                 | Đăng ký tài khoản (Mặc định quyền USER).      |
 | 21  | `GET`       | `/users`                 | Admin xem danh sách toàn bộ người dùng.       |
 | 22  | `GET`       | `/users/{userId}`        | Admin xem chi tiết thông tin một người dùng.  |
 | 23  | `PUT`       | `/users/{userId}`        | Admin cập nhật thông tin người dùng.          |
@@ -155,16 +155,16 @@ _Yêu cầu đăng nhập._
 
 ## 11. Thống kê & Phân quyền (RBAC) - 8 API
 
-| STT | Method | Endpoint | Chức năng chi tiết | Đầu vào (Input) | Đầu ra (Output) |
-| :-- | :-- | :-- | :-- | :-- | :-- |
-| 72 | `GET` | `/admin/stats/dashboard` | Thống kê Dashboard | `Admin` | `DashboardResponse` |
-| 73 | `POST` | `/roles` | Tạo vai trò mới | `JSON: {name, permissions...}` | `RoleResponse` |
-| 74 | `GET` | `/roles` | Danh sách vai trò | `-` | `List<RoleResponse>` |
-| 75 | `DELETE` | `/roles/{role}` | Xóa vai trò | `Path: role` | `void` |
-| 76 | `POST` | `/permissions` | Tạo quyền mới | `JSON: {name...}` | `PermisResponse` |
-| 77 | `GET` | `/permissions` | Danh sách quyền | `-` | `List<PermisResponse>` |
-| 78 | `DELETE` | `/permissions/{permission}` | Xóa quyền | `Path: permission` | `void` |
-| 79 | `GET` | `/admin/audit-logs` | Xem lịch sử hoạt động | `Admin, Query: page, size` | `PageResponse<AuditLog>` |
+| STT | Method   | Endpoint                    | Chức năng chi tiết    | Đầu vào (Input)                | Đầu ra (Output)          |
+| :-- | :------- | :-------------------------- | :-------------------- | :----------------------------- | :----------------------- |
+| 72  | `GET`    | `/admin/stats/dashboard`    | Thống kê Dashboard    | `Admin`                        | `DashboardResponse`      |
+| 73  | `POST`   | `/roles`                    | Tạo vai trò mới       | `JSON: {name, permissions...}` | `RoleResponse`           |
+| 74  | `GET`    | `/roles`                    | Danh sách vai trò     | `-`                            | `List<RoleResponse>`     |
+| 75  | `DELETE` | `/roles/{role}`             | Xóa vai trò           | `Path: role`                   | `void`                   |
+| 76  | `POST`   | `/permissions`              | Tạo quyền mới         | `JSON: {name...}`              | `PermisResponse`         |
+| 77  | `GET`    | `/permissions`              | Danh sách quyền       | `-`                            | `List<PermisResponse>`   |
+| 78  | `DELETE` | `/permissions/{permission}` | Xóa quyền             | `Path: permission`             | `void`                   |
+| 79  | `GET`    | `/admin/audit-logs`         | Xem lịch sử hoạt động | `Admin, Query: page, size`     | `PageResponse<AuditLog>` |
 
 ---
 

@@ -70,7 +70,7 @@ function isActive(name: string) {
             to="/admin"
             class="rounded-lg px-3 py-2 text-sm font-medium transition"
             :class="
-              isActive('admin') ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white'
+              route.path.startsWith('/admin') ? 'bg-white/10 text-white' : 'text-zinc-400 hover:text-white'
             "
           >
             Quản lý

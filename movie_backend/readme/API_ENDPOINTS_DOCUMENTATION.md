@@ -193,11 +193,11 @@ None
 
 ---
 
-### 2. Create User (Tạo người dùng)
+### 2. Create User (Đăng ký tài khoản)
 
 - **HTTP Method:** `POST`
 - **Endpoint:** `/users`
-- **Summary:** Tạo mới người dùng
+- **Summary:** Đăng ký tài khoản người dùng mới (Mặc định quyền USER)
 - **Authentication:** ❌ No
 - **Role Required:** None
 
@@ -208,7 +208,8 @@ None
   "username": "string",
   "password": "string",
   "email": "string",
-  "fullName": "string"
+  "fullName": "string",
+  "avatar": "string"
 }
 ```
 

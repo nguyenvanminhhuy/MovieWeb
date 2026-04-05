@@ -12,7 +12,7 @@ export interface PageResponse<T> {
   data: T[]
 }
 
-export type MovieType = 'SERIES' | 'MOVIE' | 'ONA'
+export type MovieType = 'TV_SERIES' | 'MOVIE' | 'OVA' | 'SPECIAL' | 'SERIES' | 'ONA'
 export type MovieStatus = 'ONGOING' | 'COMPLETED' | 'UPCOMING'
 
 export interface GenreResponse {
@@ -27,6 +27,7 @@ export interface StudioResponse {
   name: string
   description?: string
   logo?: string
+  logoUrl?: string
 }
 
 export interface FranchiseResponse {
@@ -34,6 +35,7 @@ export interface FranchiseResponse {
   name: string
   description?: string
   poster?: string
+  coverUrl?: string
 }
 
 export interface MovieResponse {
@@ -42,17 +44,22 @@ export interface MovieResponse {
   originalTitle?: string
   description?: string
   poster?: string
+  posterUrl?: string
   banner?: string
+  bannerUrl?: string
   trailerUrl?: string
   type: MovieType
   status: MovieStatus
   releaseYear?: number
+  releaseDate?: string
   totalEpisodes?: number
+  episodeCount?: number
   rating?: number
   views?: number
   studio?: StudioResponse
+  studios?: string[] | StudioResponse[]
   franchise?: FranchiseResponse
-  genres?: GenreResponse[]
+  genres?: GenreResponse[] | string[]
   createdAt?: string
   updatedAt?: string
 }
@@ -62,22 +69,30 @@ export type VideoType = 'HLS' | 'MP4' | 'EMBED'
 
 export interface VideoSourceResponse {
   id: string
-  url: string
-  quality?: VideoQuality
+  episodeId?: string
+  url?: string
+  videoUrl?: string
+  quality?: VideoQuality | string
   type?: VideoType
+  embedCode?: string
 }
 
 export interface SubtitleResponse {
   id: string
-  url: string
+  episodeId?: string
+  url?: string
+  subtitleUrl?: string
   language?: string
 }
 
 export interface EpisodeResponse {
   id: string
+  movieId?: string
   episodeNumber: number
   title?: string
+  description?: string
   duration?: number
+  thumbnailUrl?: string
   videoSources?: VideoSourceResponse[]
   subtitles?: SubtitleResponse[]
 }
@@ -86,6 +101,7 @@ export interface RoleResponse {
   id?: string
   name: string
   description?: string
+  permissions?: any[]
 }
 
 export interface UserResponse {
@@ -102,6 +118,9 @@ export interface UserResponse {
 
 export interface CommentResponse {
   id: string
+  movieId?: string
+  userId?: string
+  userName?: string
   content: string
   user?: UserResponse
   likes?: number
@@ -111,6 +130,9 @@ export interface CommentResponse {
 
 export interface ReviewResponse {
   id: string
+  movieId?: string
+  userId?: string
+  userName?: string
   rating?: number
   content?: string
   user?: UserResponse
@@ -125,7 +147,28 @@ export interface WatchHistoryResponse {
   updatedAt?: string
 }
 
+export interface ReportResponse {
+  id: string
+  user?: UserResponse
+  movie?: MovieResponse
+  episode?: EpisodeResponse
+  reason?: string
+  description?: string
+  resolved?: boolean
+  createdAt?: string
+}
+
+export interface AuditLogResponse {
+  id: string
+  username?: string
+  action?: string
+  details?: string
+  ipAddress?: string
+  createdAt?: string
+}
+
 export interface AuthenticationResponse {
   token: string
+  refreshToken?: string
   authenticated: boolean
 }

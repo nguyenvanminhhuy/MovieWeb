@@ -24,5 +24,4 @@ public class UserCreationRequest {
 
     String fullName;
     String avatar;
-    Set<String> roles;
 }
