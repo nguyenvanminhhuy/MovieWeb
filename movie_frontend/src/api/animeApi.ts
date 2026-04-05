@@ -28,6 +28,20 @@ export function logout() {
   })
 }
 
+export function introspectToken(token: string) {
+  return apiFetch<{ valid: boolean }>('/auth/introspect', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  })
+}
+
+export function refreshToken(token: string) {
+  return apiFetch<AuthenticationResponse>('/auth/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  })
+}
+
 export function getMovies(page = 1, size = 12) {
   return apiFetch<PageResponse<MovieResponse>>(`/common/movies?page=${page}&size=${size}`)
 }
@@ -124,13 +138,22 @@ export function getMyInfo() {
   return apiFetch<UserResponse>('/users/my-info')
 }
 
+export function updateProfile(body: {
+  email?: string
+  fullName?: string
+  avatar?: string
+}) {
+  return apiFetch<UserResponse>('/users/update-profile', {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  })
+}
+
 export function registerUser(body: {
   username: string
   password: string
   email: string
   fullName?: string
-  avatar?: string
-  roles: string[]
 }) {
   return apiFetch<UserResponse>('/users', {
     method: 'POST',
@@ -150,10 +173,10 @@ export function getFavorites(page = 1, size = 12) {
   return apiFetch<PageResponse<MovieResponse>>(`/favorites?page=${page}&size=${size}`)
 }
 
-export function saveWatchProgress(episodeId: string, progressSeconds: number) {
+export function saveWatchProgress(episodeId: string, watchedDuration: number, totalDuration: number) {
   return apiFetch<null>('/history', {
     method: 'POST',
-    body: JSON.stringify({ episodeId, progress: progressSeconds }),
+    body: JSON.stringify({ episodeId, watchedDuration, totalDuration }),
   })
 }
 

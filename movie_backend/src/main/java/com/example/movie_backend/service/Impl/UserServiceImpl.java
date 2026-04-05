@@ -55,16 +55,10 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        var requestedRoles = request.getRoles() == null ? Set.<String>of() : request.getRoles();
-        var roles = roleRepository.findAllById((Iterable<String>) requestedRoles);
-
-        if (roles.isEmpty()) {
-            var userRole = roleRepository.findByName("USER")
-                    .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-            roles = List.of(userRole);
-        }
-
-        user.setRoles(new HashSet<>(roles));
+        // Luôn gán role USER khi đăng ký
+        var userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+        user.setRoles(new HashSet<>(Set.of(userRole)));
 
         return userMapper.toUserResponse(userRepository.save(user));
     }

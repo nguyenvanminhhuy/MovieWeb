@@ -12,15 +12,6 @@ const err = ref('')
 const loading = ref(false)
 const router = useRouter()
 
-const envRoleIds = computed(() => {
-  const raw = import.meta.env.VITE_REGISTER_ROLE_IDS as string | undefined
-  if (!raw?.trim()) return [] as string[]
-  return raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-})
-
 async function submit() {
   err.value = ''
   loading.value = true
@@ -29,7 +20,6 @@ async function submit() {
       username: username.value.trim(),
       password: password.value,
       email: email.value.trim(),
-      roles: envRoleIds.value,
     })
     await router.push('/login')
   } catch (e) {
