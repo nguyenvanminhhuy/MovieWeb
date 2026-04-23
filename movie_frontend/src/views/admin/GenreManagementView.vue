@@ -130,21 +130,34 @@ function getFiltered() {
       <!-- Grid -->
       <div v-else class="genre-grid">
         <div v-for="g in getFiltered()" :key="g.id" class="genre-card">
-          <div class="genre-name">{{ g.name }}</div>
-          <div v-if="g.slug" class="genre-slug">{{ g.slug }}</div>
-          <div v-if="g.description" class="genre-desc">{{ g.description }}</div>
-          <div class="genre-actions">
-            <button @click="openEdit(g)" class="action-btn edit">Sửa</button>
-            <button @click="handleDelete(g.id)" class="action-btn delete">Xóa</button>
+          <div class="genre-card-header">
+            <div class="genre-info">
+              <div class="genre-name">{{ g.name }}</div>
+              <div v-if="g.slug" class="genre-slug">/{{ g.slug }}</div>
+            </div>
+            <div class="genre-actions-top">
+               <button @click="openEdit(g)" class="icon-btn" title="Chỉnh sửa">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+               </button>
+               <button @click="handleDelete(g.id)" class="icon-btn delete" title="Xóa">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+               </button>
+            </div>
           </div>
+          <div v-if="g.description" class="genre-desc">{{ g.description }}</div>
+          <div v-else class="genre-desc empty">Chưa có mô tả cho thể loại này.</div>
         </div>
         
         <!-- Empty State -->
         <div v-if="!loading && getFiltered().length === 0" class="empty-state">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" />
-          </svg>
-          <p>Không tìm thấy thể loại nào.</p>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M4 6h16M4 12h16M4 18h7" stroke-linecap="round" />
+            </svg>
+          </div>
+          <h3>Không tìm thấy thể loại</h3>
+          <p>Thử tìm kiếm với từ khóa khác hoặc thêm thể loại mới.</p>
+          <button @click="openAdd" class="btn btn-outline">Thêm mới ngay</button>
         </div>
       </div>
 
@@ -189,59 +202,69 @@ function getFiltered() {
 </template>
 
 <style scoped>
-.page { display: flex; flex-direction: column; gap: 20px; }
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.page-title { font-size: 24px; font-weight: 800; color: #f4f4f5; margin: 0; letter-spacing: -0.02em; }
-.page-subtitle { font-size: 13px; color: #71717a; margin: 4px 0 0; }
-.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: none; cursor: pointer; transition: all 0.15s; }
-.btn svg { width: 15px; height: 15px; }
+.page { display: flex; flex-direction: column; gap: 24px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.page-title { font-size: 28px; font-weight: 900; color: #fff; margin: 0; letter-spacing: -0.03em; }
+.page-subtitle { font-size: 14px; color: #71717a; margin: 4px 0 0; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: all 0.2s; }
+.btn svg { width: 18px; height: 18px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: #7c3aed; color: white; }
-.btn-primary:not(:disabled):hover { background: #6d28d9; transform: translateY(-1px); }
-.btn-ghost { background: transparent; color: #71717a; }
-.btn-ghost:hover { background: rgba(255,255,255,0.05); color: #f4f4f5; }
-.alert { padding: 11px 16px; border-radius: 12px; font-size: 13px; }
-.alert-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
-.search-box { display: flex; align-items: center; gap: 8px; background: #18181b; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 9px 14px; max-width: 320px; }
-.search-box svg { width: 15px; height: 15px; color: #52525b; flex-shrink: 0; }
-.search-input { background: none; border: none; outline: none; color: #e4e4e7; font-size: 13px; width: 100%; }
-.search-input::placeholder { color: #52525b; }
+.btn-primary { background: #7c3aed; color: white; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3); }
+.btn-primary:not(:disabled):hover { background: #6d28d9; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4); }
+.btn-ghost { background: rgba(255,255,255,0.05); color: #a1a1aa; border: 1px solid rgba(255,255,255,0.1); }
+.btn-ghost:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.btn-outline { background: transparent; border: 1px solid rgba(124, 58, 237, 0.4); color: #a78bfa; }
+.btn-outline:hover { background: rgba(124, 58, 237, 0.1); }
 
-.genre-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-.skeleton-card { background: #18181b; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; height: 90px; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.search-box { display: flex; align-items: center; gap: 12px; background: #18181b; border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 10px 16px; width: 100%; max-width: 400px; transition: border-color 0.2s; }
+.search-box:focus-within { border-color: rgba(124, 58, 237, 0.5); }
+.search-box svg { width: 18px; height: 18px; color: #52525b; }
+.search-input { background: none; border: none; outline: none; color: #fff; font-size: 14px; width: 100%; }
 
-.genre-card { background: #18181b; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px; transition: all 0.15s; }
-.genre-card:hover { background: #1c1c1f; border-color: rgba(124,58,237,0.3); }
-.genre-name { font-size: 14px; font-weight: 700; color: #e4e4e7; }
-.genre-slug { font-size: 11px; color: #7c3aed; font-family: monospace; margin-top: 3px; }
-.genre-desc { font-size: 12px; color: #71717a; margin-top: 6px; line-clamp: 2; -webkit-line-clamp: 2; -webkit-box-orient: vertical; display: -webkit-box; overflow: hidden; }
-.genre-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
-.action-btn { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; border: none; cursor: pointer; transition: all 0.13s; }
-.action-btn.edit { background: rgba(124,58,237,0.1); color: #a78bfa; }
-.action-btn.edit:hover { background: rgba(124,58,237,0.2); }
-.action-btn.delete { background: rgba(239,68,68,0.08); color: #f87171; }
-.action-btn.delete:hover { background: rgba(239,68,68,0.15); }
+.genre-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.skeleton-card { background: #18181b; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; height: 120px; animation: pulse 1.5s infinite; }
 
-.empty-state {
-  grid-column: 1/-1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  color: #71717a;
-}
-.empty-state svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
-.empty-state p { margin: 0; font-size: 14px; font-weight: 500; }
+.genre-card { background: #18181b; border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 20px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 12px; }
+.genre-card:hover { transform: translateY(-4px); border-color: rgba(124, 58, 237, 0.4); background: #1c1c1f; box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
 
-/* Pagination */
-.pagination { display: flex; justify-content: center; gap: 6px; margin-top: 20px; }
-.page-btn { padding: 7px 13px; border-radius: 9px; font-size: 13px; font-weight: 500; border: 1px solid rgba(255, 255, 255, 0.06); background: #18181b; color: #71717a; cursor: pointer; transition: all 0.15s; }
-.page-btn:hover:not(:disabled) { background: #27272a; color: #e4e4e7; }
-.page-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+.genre-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.genre-name { font-size: 16px; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+.genre-slug { font-size: 12px; color: #7c3aed; font-weight: 600; font-family: 'JetBrains Mono', monospace; opacity: 0.8; }
+.genre-desc { font-size: 13px; color: #a1a1aa; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.genre-desc.empty { font-style: italic; opacity: 0.5; }
+
+.genre-actions-top { display: flex; gap: 4px; opacity: 0; transition: opacity 0.2s; }
+.genre-card:hover .genre-actions-top { opacity: 1; }
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05); color: #a1a1aa; cursor: pointer; transition: all 0.2s; }
+.icon-btn:hover { background: rgba(124, 58, 237, 0.1); color: #a78bfa; border-color: rgba(124, 58, 237, 0.2); }
+.icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+.icon-btn svg { width: 16px; height: 16px; }
+
+.empty-state { grid-column: 1/-1; padding: 60px 20px; text-align: center; background: rgba(255,255,255,0.02); border: 2px dashed rgba(255,255,255,0.05); border-radius: 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.empty-icon { width: 64px; height: 64px; border-radius: 20px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; color: #52525b; margin-bottom: 8px; }
+.empty-icon svg { width: 32px; height: 32px; }
+.empty-state h3 { font-size: 18px; font-weight: 800; color: #fff; margin: 0; }
+.empty-state p { font-size: 14px; color: #71717a; max-width: 300px; margin: 0 0 8px; }
+
+/* Modal Premium */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+.modal { background: #18181b; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 24px 48px rgba(0,0,0,0.4); animation: modal-in 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+@keyframes modal-in { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-header { padding: 24px 28px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 20px; font-weight: 800; color: #fff; margin: 0; }
+.modal-close { background: none; border: none; color: #52525b; font-size: 20px; cursor: pointer; transition: color 0.2s; }
+.modal-close:hover { color: #fff; }
+.modal-body { padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-size: 13px; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.05em; }
+.form-input { background: #0f0f11; border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 14px; transition: all 0.2s; }
+.form-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1); }
+.modal-footer { padding: 24px 28px; background: rgba(255,255,255,0.02); display: flex; justify-content: flex-end; gap: 12px; }
+
+.pagination { display: flex; justify-content: center; gap: 8px; margin-top: 32px; }
+.page-btn { padding: 10px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); background: #18181b; color: #a1a1aa; cursor: pointer; transition: all 0.2s; }
+.page-btn:hover:not(:disabled) { background: #27272a; color: #fff; border-color: rgba(255,255,255,0.2); }
+.page-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3); }
 .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 </style>

@@ -71,10 +71,11 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    public PageResponse<MovieResponse> getAll(int page, int size) {
+    public PageResponse<MovieResponse> getAll(String query, String genreId, MovieType type, MovieStatus status, int page,
+            int size) {
         Sort sort = Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        var pageData = movieRepository.findAll(pageable);
+        var pageData = movieRepository.searchMovies(query, genreId, null, type, status, pageable);
 
         return PageResponse.<MovieResponse>builder()
                 .currentPage(page)

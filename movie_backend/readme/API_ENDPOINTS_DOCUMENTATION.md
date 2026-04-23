@@ -1,6 +1,6 @@
 # 📚 API Endpoints Documentation - Movie Backend
 
-**Ngày cập nhật:** 25/03/2026
+**Ngày cập nhật:** 07/04/2026
 **Phiên bản:** 1.1
 
 ---
@@ -465,10 +465,14 @@ None
 
 #### Query Parameters
 
-| Parameter | Type | Default | Description           |
-| --------- | ---- | ------- | --------------------- |
-| page      | int  | 1       | Số trang              |
-| size      | int  | 10      | Số bản ghi trên trang |
+| Parameter | Type   | Default | Description                              |
+| --------- | ------ | ------- | ---------------------------------------- |
+| query     | string | -       | Lọc theo tên phim                        |
+| genreId   | string | -       | Lọc theo ID thể loại                     |
+| type      | string | -       | Loại phim: TV_SERIES, MOVIE, OVA, SPECIAL|
+| status    | string | -       | Trạng thái: ONGOING, COMPLETED, UPCOMING |
+| page      | int    | 1       | Số trang                                 |
+| size      | int    | 10      | Số bản ghi trên trang                    |
 
 #### Response (200 OK)
 
@@ -488,7 +492,7 @@ None
         "description": "string",
         "posterUrl": "string",
         "bannerUrl": "string",
-        "type": "SERIES|MOVIE|ONA",
+        "type": "TV_SERIES|MOVIE|OVA|SPECIAL",
         "status": "ONGOING|COMPLETED|UPCOMING",
         "episodeCount": 0,
         "releaseDate": "2026-03-25",
@@ -711,7 +715,7 @@ None
         "description": "string",
         "posterUrl": "string",
         "bannerUrl": "string",
-        "type": "SERIES|MOVIE|ONA",
+        "type": "TV_SERIES|MOVIE|OVA|SPECIAL",
         "status": "ONGOING|COMPLETED|UPCOMING",
         "episodeCount": 0,
         "releaseDate": "2026-03-25",
@@ -735,10 +739,14 @@ None
 
 #### Query Parameters
 
-| Parameter | Type | Default | Description           |
-| --------- | ---- | ------- | --------------------- |
-| page      | int  | 1       | Số trang              |
-| size      | int  | 10      | Số bản ghi trên trang |
+| Parameter | Type   | Default | Description                              |
+| --------- | ------ | ------- | ---------------------------------------- |
+| query     | string | -       | Tìm kiếm theo tên phim                   |
+| genreId   | string | -       | Lọc theo ID thể loại                     |
+| type      | string | -       | Loại phim: TV_SERIES, MOVIE, OVA, SPECIAL|
+| status    | string | -       | Trạng thái: ONGOING, COMPLETED, UPCOMING |
+| page      | int    | 1       | Số trang                                 |
+| size      | int    | 10      | Số bản ghi trên trang                    |
 
 #### Response (200 OK)
 
@@ -758,7 +766,7 @@ None
         "description": "string",
         "posterUrl": "string",
         "bannerUrl": "string",
-        "type": "SERIES|MOVIE|ONA",
+        "type": "TV_SERIES|MOVIE|OVA|SPECIAL",
         "status": "ONGOING|COMPLETED|UPCOMING",
         "episodeCount": 0,
         "releaseDate": "2026-03-25",
@@ -772,7 +780,47 @@ None
 
 ---
 
-### 3. Get Movie by ID (Lấy thông tin phim theo ID)
+### 3. Get Movie Types (Lấy danh sách các loại phim)
+
+- **HTTP Method:** `GET`
+- **Endpoint:** `/common/movies/types`
+- **Summary:** Lấy danh sách các giá trị hợp lệ cho loại phim (TV_SERIES, MOVIE...)
+- **Authentication:** ❌ No
+- **Role Required:** None
+
+#### Response (200 OK)
+
+```json
+{
+  "code": 1000,
+  "message": "Success",
+  "result": ["TV_SERIES", "MOVIE", "OVA", "SPECIAL"]
+}
+```
+
+---
+
+### 4. Get Movie Statuses (Lấy danh sách các trạng thái phim)
+
+- **HTTP Method:** `GET`
+- **Endpoint:** `/common/movies/statuses`
+- **Summary:** Lấy danh sách các giá trị hợp lệ cho trạng thái phim (ONGOING, COMPLETED...)
+- **Authentication:** ❌ No
+- **Role Required:** None
+
+#### Response (200 OK)
+
+```json
+{
+  "code": 1000,
+  "message": "Success",
+  "result": ["ONGOING", "COMPLETED", "UPCOMING"]
+}
+```
+
+---
+
+### 5. Get Movie by ID (Lấy thông tin phim theo ID)
 
 - **HTTP Method:** `GET`
 - **Endpoint:** `/common/movies/{id}`
@@ -844,7 +892,7 @@ None
         "description": "string",
         "posterUrl": "string",
         "bannerUrl": "string",
-        "type": "SERIES|MOVIE|ONA",
+        "type": "TV_SERIES|MOVIE|OVA|SPECIAL",
         "status": "ONGOING|COMPLETED|UPCOMING",
         "episodeCount": 0,
         "releaseDate": "2026-03-25",
@@ -897,7 +945,7 @@ None
         "description": "string",
         "posterUrl": "string",
         "bannerUrl": "string",
-        "type": "SERIES|MOVIE|ONA",
+        "type": "TV_SERIES|MOVIE|OVA|SPECIAL",
         "status": "ONGOING|COMPLETED|UPCOMING",
         "episodeCount": 0,
         "releaseDate": "2026-03-25",
@@ -1857,7 +1905,8 @@ None
 ```json
 {
   "movieId": "string",
-  "content": "string"
+  "content": "string",
+  "parentId": "string (optional - for replies)"
 }
 ```
 
@@ -1869,12 +1918,16 @@ None
   "message": "Success",
   "result": {
     "id": "string",
-    "movieId": "string",
-    "userId": "string",
-    "userName": "string",
     "content": "string",
+    "user": {
+      "id": "string",
+      "username": "string",
+      "fullName": "string",
+      "avatar": "string"
+    },
     "likes": 0,
-    "createdAt": "2026-03-25T10:00:00Z"
+    "createdAt": "2026-03-25T10:00:00Z",
+    "replies": []
   }
 }
 ```
@@ -1903,12 +1956,16 @@ None
   "message": "Success",
   "result": {
     "id": "string",
-    "movieId": "string",
-    "userId": "string",
-    "userName": "string",
     "content": "string",
+    "user": {
+      "id": "string",
+      "username": "string",
+      "fullName": "string",
+      "avatar": "string"
+    },
     "likes": 1,
-    "createdAt": "2026-03-25T10:00:00Z"
+    "createdAt": "2026-03-25T10:00:00Z",
+    "replies": []
   }
 }
 ```
@@ -1930,16 +1987,64 @@ None
 | id        | string | ID của bình luận |
 
 ##### Response (200 OK)
-
-```json
-{
-  "code": 1000,
-  "message": "Success",
-  "result": null
-}
-```
-
----
+ 
+ ```json
+ {
+   "code": 1000,
+   "message": "Success",
+   "result": null
+ }
+ ```
+ 
+ ---
+ 
+ #### 4. Get All Comments (Lấy tất cả bình luận - Admin)
+ 
+ - **HTTP Method:** `GET`
+ - **Endpoint:** `/comments`
+ - **Summary:** Lấy danh sách tất cả bình luận (Phân trang) - Dành cho ADMIN quản lý
+ - **Authentication:** ✅ Yes
+ - **Role Required:** ADMIN
+ 
+ ##### Query Parameters
+ 
+ | Parameter | Type | Default | Description           |
+ | --------- | ---- | ------- | --------------------- |
+ | page      | int  | 1       | Số trang              |
+ | size      | int  | 10      | Số bản ghi trên trang |
+ 
+ ##### Response (200 OK)
+ 
+ ```json
+ {
+   "code": 1000,
+   "message": "Success",
+   "result": {
+     "currentPage": 1,
+     "pageSize": 10,
+     "totalElements": 100,
+     "totalPages": 10,
+     "data": [
+       {
+         "id": "string",
+         "content": "string",
+         "user": {
+           "id": "string",
+           "username": "string",
+           "fullName": "string",
+           "avatar": "string"
+         },
+         "movieTitle": "string",
+         "likes": 0,
+         "createdAt": "2026-03-25T10:00:00Z",
+         "replies": []
+       }
+     ]
+   }
+ }
+ ```
+ 
+ ---
 
 ### Review API
 
@@ -1959,7 +2064,7 @@ None
 ```json
 {
   "movieId": "string",
-  "rating": 8.5,
+  "rating": 8,
   "content": "string"
 }
 ```
@@ -1972,11 +2077,14 @@ None
   "message": "Success",
   "result": {
     "id": "string",
-    "movieId": "string",
-    "userId": "string",
-    "userName": "string",
-    "rating": 8.5,
+    "rating": 8,
     "content": "string",
+    "user": {
+      "id": "string",
+      "username": "string",
+      "fullName": "string",
+      "avatar": "string"
+    },
     "createdAt": "2026-03-25T10:00:00Z"
   }
 }
@@ -1990,7 +2098,7 @@ None
 - **Endpoint:** `/reviews/{id}`
 - **Summary:** Xóa đánh giá
 - **Authentication:** ✅ Yes
-- **Role Required:** ADMIN
+- **Role Required:** ADMIN or Owner
 
 ##### Path Parameters
 
@@ -2007,6 +2115,55 @@ None
   "result": null
 }
 ```
+ 
+ ---
+ 
+ #### 3. Get All Reviews (Lấy tất cả đánh giá - Admin)
+ 
+ - **HTTP Method:** `GET`
+ - **Endpoint:** `/reviews`
+ - **Summary:** Lấy danh sách tất cả đánh giá (Phân trang) - Dành cho ADMIN quản lý
+ - **Authentication:** ✅ Yes
+ - **Role Required:** ADMIN
+ 
+ ##### Query Parameters
+ 
+ | Parameter | Type | Default | Description           |
+ | --------- | ---- | ------- | --------------------- |
+ | page      | int  | 1       | Số trang              |
+ | size      | int  | 10      | Số bản ghi trên trang |
+ 
+ ##### Response (200 OK)
+ 
+ ```json
+ {
+   "code": 1000,
+   "message": "Success",
+   "result": {
+     "currentPage": 1,
+     "pageSize": 10,
+     "totalElements": 100,
+     "totalPages": 10,
+     "data": [
+       {
+         "id": "string",
+         "rating": 8,
+         "content": "string",
+         "user": {
+           "id": "string",
+           "username": "string",
+           "fullName": "string",
+           "avatar": "string"
+         },
+         "movieTitle": "string",
+         "createdAt": "2026-03-25T10:00:00Z"
+       }
+     ]
+   }
+ }
+ ```
+ 
+ ---
 
 ---
 
@@ -2100,7 +2257,7 @@ None
         "description": "string",
         "posterUrl": "string",
         "bannerUrl": "string",
-        "type": "SERIES|MOVIE|ONA",
+        "type": "TV_SERIES|MOVIE|OVA|SPECIAL",
         "status": "ONGOING|COMPLETED|UPCOMING",
         "episodeCount": 0,
         "releaseDate": "2026-03-25",
@@ -2390,7 +2547,8 @@ None
 ```json
 {
   "name": "string",
-  "description": "string"
+  "description": "string",
+  "permissions": ["PERMISSION_NAME"]
 }
 ```
 
@@ -2401,8 +2559,15 @@ None
   "code": 1000,
   "message": "Success",
   "result": {
+    "id": "string",
     "name": "string",
-    "description": "string"
+    "description": "string",
+    "permissions": [
+      {
+        "name": "PERMISSION_NAME",
+        "description": "string"
+      }
+    ]
   }
 }
 ```
@@ -2425,12 +2590,16 @@ None
   "message": "Success",
   "result": [
     {
+      "id": "string",
       "name": "ADMIN",
-      "description": "Administrator role"
+      "description": "Administrator role",
+      "permissions": []
     },
     {
+      "id": "string",
       "name": "USER",
-      "description": "Regular user role"
+      "description": "Regular user role",
+      "permissions": []
     }
   ]
 }
@@ -2800,16 +2969,18 @@ None
   "code": 1000,
   "message": "Success",
   "result": {
-    "totalUsers": 1000,
     "totalMovies": 500,
-    "totalEpisodes": 5000,
+    "totalUsers": 1000,
     "totalViews": 50000,
-    "activeUsers": 200,
-    "newUsersThisMonth": 50,
     "totalComments": 1000,
-    "totalReviews": 500,
-    "totalReports": 10,
-    "unresolvedReports": 3
+    "moviesByType": {
+      "SERIES": 300,
+      "MOVIE": 200
+    },
+    "moviesByStatus": {
+      "ONGOING": 100,
+      "COMPLETED": 400
+    }
   }
 }
 ```
@@ -2883,16 +3054,12 @@ None
     "data": [
       {
         "id": "string",
-        "userId": "string",
-        "userName": "string",
+        "username": "string",
         "action": "string",
-        "description": "string",
-        "entityType": "string",
-        "entityId": "string",
-        "changes": "string",
+        "details": "string",
         "ipAddress": "string",
-        "userAgent": "string",
-        "createdAt": "2026-03-25T10:00:00Z"
+        "createdAt": "2026-03-25T10:00:00Z",
+        "updatedAt": "2026-03-25T10:00:00Z"
       }
     ]
   }

@@ -22,20 +22,21 @@ const page = ref(1)
 const totalPages = ref(1)
 const totalElements = ref(0)
 const search = ref('')
+const deletingIds = ref(new Set<string>())
 
 const showAddModal = ref(false)
 const editingMovie = ref<Partial<MovieResponse> | null>(null)
 const form = ref<any>({
   title: '',
   description: '',
-  poster: '',
-  banner: '',
+  posterUrl: '',
+  bannerUrl: '',
   type: 'SERIES',
   status: 'ONGOING',
-  releaseYear: new Date().getFullYear(),
+  releaseDate: '',
   trailerUrl: '',
-  genres: [],
-  studio: undefined,
+  genres: [] as string[],
+  studios: [] as string[],
 })
 const saving = ref(false)
 
@@ -109,12 +110,21 @@ async function handleSeed() {
 }
 
 async function handleDelete(id: string) {
-  if (!confirm('Xóa phim này?')) return
+  if (!confirm('Bạn có chắc chắn muốn xóa bộ phim này?')) return
+
+  deletingIds.value = new Set([...deletingIds.value, id])
   try {
     await adminApi.deleteMovie(id)
     await fetchMovies()
   } catch (e) {
-    alert(e instanceof Error ? e.message : 'Lỗi khi xóa')
+    const msg = e instanceof Error ? e.message : 'Lỗi khi xóa phim'
+    alert(
+      `❌ Không thể xóa phim: ${msg}\n\nLưu ý: Có thể do phim đang có tập phim hoặc dữ liệu liên quan.`,
+    )
+  } finally {
+    const next = new Set(deletingIds.value)
+    next.delete(id)
+    deletingIds.value = next
   }
 }
 
@@ -126,10 +136,24 @@ function changePage(p: number) {
 async function handleSave() {
   saving.value = true
   try {
+    // Build payload matching the backend API format
+    const payload: any = {
+      title: form.value.title,
+      description: form.value.description,
+      posterUrl: form.value.posterUrl,
+      bannerUrl: form.value.bannerUrl,
+      type: form.value.type,
+      status: form.value.status,
+      releaseDate: form.value.releaseDate || undefined,
+      trailerUrl: form.value.trailerUrl || undefined,
+      genres: form.value.genres, // array of genre IDs
+      studios: form.value.studios, // array of studio IDs
+    }
+
     if (editingMovie.value?.id) {
-      await adminApi.updateMovie(editingMovie.value.id, form.value)
+      await adminApi.updateMovie(editingMovie.value.id, payload)
     } else {
-      await adminApi.createMovie(form.value)
+      await adminApi.createMovie(payload)
     }
     closeModal()
     await fetchMovies()
@@ -145,14 +169,14 @@ function openAddModal() {
   form.value = {
     title: '',
     description: '',
-    poster: '',
-    banner: '',
+    posterUrl: '',
+    bannerUrl: '',
     type: 'SERIES',
     status: 'ONGOING',
-    releaseYear: new Date().getFullYear(),
+    releaseDate: new Date().toISOString().slice(0, 10),
     trailerUrl: '',
     genres: [],
-    studio: undefined,
+    studios: [],
   }
   showAddModal.value = true
 }
@@ -161,15 +185,19 @@ function openEditModal(m: MovieResponse) {
   editingMovie.value = m
   form.value = {
     title: m.title,
-    description: m.description,
-    poster: m.poster,
-    banner: m.banner,
+    description: m.description || '',
+    posterUrl: m.posterUrl || m.poster || '',
+    bannerUrl: m.bannerUrl || m.banner || '',
     type: m.type,
     status: m.status,
-    releaseYear: m.releaseYear,
-    trailerUrl: m.trailerUrl,
+    releaseDate: m.releaseDate || (m.releaseYear ? `${m.releaseYear}-01-01` : ''),
+    trailerUrl: m.trailerUrl || '',
     genres: m.genres ? m.genres.map((g: any) => g.id || g) : [],
-    studio: m.studio?.id || m.studio,
+    studios: m.studios
+      ? (m.studios as any[]).map((s: any) => s.id || s)
+      : m.studio
+        ? [typeof m.studio === 'string' ? m.studio : m.studio.id]
+        : [],
   }
   showAddModal.value = true
 }
@@ -346,11 +374,26 @@ onMounted(fetchMovies)
               </td>
               <td>
                 <div class="action-btns">
-                  <RouterLink :to="'/admin/movies/' + m.id + '/episodes'" class="action-btn epis"
+                  <RouterLink
+                    :to="'/admin/movies/' + m.id + '/episodes'"
+                    class="action-btn epis"
+                    :class="{ disabled: deletingIds.has(m.id) }"
                     >Tập phim</RouterLink
                   >
-                  <button @click="openEditModal(m)" class="action-btn edit">Sửa</button>
-                  <button @click="handleDelete(m.id)" class="action-btn delete">Xóa</button>
+                  <button
+                    @click="openEditModal(m)"
+                    class="action-btn edit"
+                    :disabled="deletingIds.has(m.id)"
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    @click="handleDelete(m.id)"
+                    class="action-btn delete"
+                    :disabled="deletingIds.has(m.id)"
+                  >
+                    {{ deletingIds.has(m.id) ? 'Đang xóa...' : 'Xóa' }}
+                  </button>
                 </div>
               </td>
             </tr>
@@ -401,7 +444,12 @@ onMounted(fetchMovies)
             <div class="form-grid">
               <div class="form-group span-2">
                 <label>Tên phim</label>
-                <input v-model="form.title" class="form-input" placeholder="Nhập tên phim..." required />
+                <input
+                  v-model="form.title"
+                  class="form-input"
+                  placeholder="Nhập tên phim..."
+                  required
+                />
               </div>
               <div class="form-group">
                 <label>Loại</label>
@@ -422,13 +470,12 @@ onMounted(fetchMovies)
                 </select>
               </div>
               <div class="form-group">
-                <label>Năm phát hành</label>
-                <input v-model.number="form.releaseYear" type="number" class="form-input" placeholder="2024" />
+                <label>Ngày phát hành</label>
+                <input v-model="form.releaseDate" type="date" class="form-input" />
               </div>
               <div class="form-group">
-                <label>Studio</label>
-                <select v-model="form.studio" class="form-input">
-                  <option :value="undefined">Chọn Studio</option>
+                <label>Studios (Giữ Ctrl để chọn nhiều)</label>
+                <select v-model="form.studios" class="form-input" multiple style="height: 80px">
                   <option v-for="s in allStudios" :key="s.id" :value="s.id">{{ s.name }}</option>
                 </select>
               </div>
@@ -438,11 +485,11 @@ onMounted(fetchMovies)
               </div>
               <div class="form-group">
                 <label>Poster URL</label>
-                <input v-model="form.poster" class="form-input" placeholder="https://..." />
+                <input v-model="form.posterUrl" class="form-input" placeholder="https://..." />
               </div>
               <div class="form-group">
                 <label>Banner URL</label>
-                <input v-model="form.banner" class="form-input" placeholder="https://..." />
+                <input v-model="form.bannerUrl" class="form-input" placeholder="https://..." />
               </div>
               <div class="form-group span-2">
                 <label>Trailer URL (Youtube)</label>

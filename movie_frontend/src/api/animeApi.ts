@@ -42,8 +42,24 @@ export function refreshToken(token: string) {
   })
 }
 
-export function getMovies(page = 1, size = 12) {
-  return apiFetch<PageResponse<MovieResponse>>(`/common/movies?page=${page}&size=${size}`)
+export function getMovies(
+  page = 1,
+  size = 12,
+  params?: {
+    query?: string
+    genreId?: string
+    type?: string
+    status?: string
+  },
+) {
+  const q = new URLSearchParams()
+  q.set('page', String(page))
+  q.set('size', String(size))
+  if (params?.query) q.set('query', params.query)
+  if (params?.genreId) q.set('genreId', params.genreId)
+  if (params?.type) q.set('type', params.type)
+  if (params?.status) q.set('status', params.status)
+  return apiFetch<PageResponse<MovieResponse>>(`/common/movies?${q.toString()}`)
 }
 
 export function getTopMovies(type: 'day' | 'week' | 'month' | 'all' = 'all', page = 1, size = 12) {
@@ -56,8 +72,8 @@ export function searchMovies(params: {
   query?: string
   genreId?: string
   franchiseId?: string
-  type?: MovieType
-  status?: MovieStatus
+  type?: MovieType | string
+  status?: MovieStatus | string
   page?: number
   size?: number
 }) {
@@ -69,6 +85,7 @@ export function searchMovies(params: {
   if (params.status) q.set('status', params.status)
   q.set('page', String(params.page ?? 1))
   q.set('size', String(params.size ?? 12))
+
   return apiFetch<PageResponse<MovieResponse>>(`/common/movies/search?${q.toString()}`)
 }
 
@@ -138,23 +155,14 @@ export function getMyInfo() {
   return apiFetch<UserResponse>('/users/my-info')
 }
 
-export function updateProfile(body: {
-  email?: string
-  fullName?: string
-  avatar?: string
-}) {
+export function updateProfile(body: { email?: string; fullName?: string; avatar?: string }) {
   return apiFetch<UserResponse>('/users/update-profile', {
     method: 'PUT',
     body: JSON.stringify(body),
   })
 }
 
-export function registerUser(body: {
-  username: string
-  password: string
-  email: string
-  fullName?: string
-}) {
+export function registerUser(body: { username: string; password: string; email: string }) {
   return apiFetch<UserResponse>('/users', {
     method: 'POST',
     body: JSON.stringify(body),
@@ -173,7 +181,11 @@ export function getFavorites(page = 1, size = 12) {
   return apiFetch<PageResponse<MovieResponse>>(`/favorites?page=${page}&size=${size}`)
 }
 
-export function saveWatchProgress(episodeId: string, watchedDuration: number, totalDuration: number) {
+export function saveWatchProgress(
+  episodeId: string,
+  watchedDuration: number,
+  totalDuration: number,
+) {
   return apiFetch<null>('/history', {
     method: 'POST',
     body: JSON.stringify({ episodeId, watchedDuration, totalDuration }),
@@ -182,4 +194,30 @@ export function saveWatchProgress(episodeId: string, watchedDuration: number, to
 
 export function getHistory(page = 1, size = 12) {
   return apiFetch<PageResponse<WatchHistoryResponse>>(`/history?page=${page}&size=${size}`)
+}
+
+// Notifications
+export function getMyNotifications(page = 1, size = 10) {
+  return apiFetch<
+    PageResponse<{ id: string; title: string; message: string; read: boolean; createdAt: string }>
+  >(`/notifications?page=${page}&size=${size}`)
+}
+
+export function getUnreadNotificationCount() {
+  return apiFetch<number>('/notifications/unread-count')
+}
+
+export function markNotificationRead(id: string) {
+  return apiFetch<null>(`/notifications/${id}/read`, { method: 'PATCH' })
+}
+
+export function markAllNotificationsRead() {
+  return apiFetch<null>('/notifications/read-all', { method: 'PATCH' })
+}
+
+export function createReport(body: { movieId: string; reason: string; description: string }) {
+  return apiFetch<any>('/reports', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
 }

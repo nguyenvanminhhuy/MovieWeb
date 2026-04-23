@@ -10,7 +10,8 @@ import com.example.movie_backend.enums.MovieType;
 public interface MovieService {
     MovieResponse create(MovieRequest request);
 
-    PageResponse<MovieResponse> getAll(int page, int size);
+    PageResponse<MovieResponse> getAll(String query, String genreId, MovieType type, MovieStatus status, int page,
+            int size);
 
     PageResponse<MovieResponse> search(String query, String genreId, String franchiseId, MovieType type,
             MovieStatus status, int page, int size);

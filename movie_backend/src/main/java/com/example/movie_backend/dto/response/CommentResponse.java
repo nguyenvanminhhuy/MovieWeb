@@ -16,6 +16,7 @@ public class CommentResponse {
     String content;
     UserResponse user;
     Integer likes;
+    String movieTitle;
     LocalDateTime createdAt;
     List<CommentResponse> replies;
 }

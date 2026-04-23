@@ -59,13 +59,33 @@ public class CommonController {
                 .build();
     }
 
-    @Operation(summary = "Lấy danh sách phim")
+    @Operation(summary = "Lấy danh sách phim (có lọc)")
     @GetMapping("/movies")
     ApiResponse<PageResponse<MovieResponse>> getAllMovies(
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "genreId", required = false) String genreId,
+            @RequestParam(value = "type", required = false) MovieType type,
+            @RequestParam(value = "status", required = false) MovieStatus status,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size) {
         return ApiResponse.<PageResponse<MovieResponse>>builder()
-                .result(movieService.getAll(page, size))
+                .result(movieService.getAll(query, genreId, type, status, page, size))
+                .build();
+    }
+
+    @Operation(summary = "Lấy danh sách các loại phim")
+    @GetMapping("/movies/types")
+    ApiResponse<MovieType[]> getMovieTypes() {
+        return ApiResponse.<MovieType[]>builder()
+                .result(MovieType.values())
+                .build();
+    }
+
+    @Operation(summary = "Lấy danh sách các trạng thái phim")
+    @GetMapping("/movies/statuses")
+    ApiResponse<MovieStatus[]> getMovieStatuses() {
+        return ApiResponse.<MovieStatus[]>builder()
+                .result(MovieStatus.values())
                 .build();
     }
 

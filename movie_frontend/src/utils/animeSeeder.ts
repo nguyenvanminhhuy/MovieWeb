@@ -53,21 +53,18 @@ export async function seedTopAnime(limit = 10) {
 
     for (const anime of data) {
       const payload: any = {
-        title: anime.title,
-        originalTitle: anime.title_japanese,
-        description: anime.synopsis?.substring(0, 200) + '...',
-        poster: anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
-        banner: anime.images?.webp?.large_image_url || anime.images?.jpg?.large_image_url,
-        type: mapType(anime.type),
-        status: mapStatus(anime.status),
-        releaseYear:
-          anime.year || (anime.aired?.from ? new Date(anime.aired.from).getFullYear() : undefined),
-        totalEpisodes: anime.episodes,
-        rating: anime.score,
-        // Thêm các mảng trống để tránh lỗi "Null" ở Backend nếu cần
+        title: anime.title.substring(0, 50),
+        originalTitle: '',
+        description: 'Nạp từ Jikan (Minimal).',
+        poster: anime.images?.webp?.large_image_url || '',
+        banner: '',
+        type: 'SERIES',
+        status: 'ONGOING',
+        releaseYear: anime.year || 2024,
+        totalEpisodes: 1,
         genres: [],
-        studios: [],
-        franchises: [],
+        studio: undefined,
+        trailerUrl: '',
       }
 
       try {
@@ -102,13 +99,13 @@ export async function seedTopAnime(limit = 10) {
 
 function mapType(t: string): string {
   const typeMap: Record<string, string> = {
-    TV: 'SERIES',
+    TV: 'TV_SERIES',
     Movie: 'MOVIE',
-    ONA: 'ONA',
-    OVA: 'SERIES',
-    Special: 'SERIES',
+    ONA: 'TV_SERIES',
+    OVA: 'OVA',
+    Special: 'SPECIAL',
   }
-  return typeMap[t] || 'SERIES'
+  return typeMap[t] || 'TV_SERIES'
 }
 
 function mapStatus(s: string): string {
@@ -276,8 +273,10 @@ let franchiseCache: Record<string, string> = {}
 async function ensureGenres(genreNames: string[]): Promise<any[]> {
   try {
     if (Object.keys(genreCache).length === 0) {
-      const existing = await adminApi.getAllGenresAdmin()
-      existing.forEach(g => { genreCache[g.name.toLowerCase()] = g.id })
+      const existing = await adminApi.getAllGenresAdmin(1, 1000)
+      existing.data.forEach((g) => {
+        genreCache[g.name.toLowerCase()] = g.id
+      })
     }
     const results: any[] = []
     for (const name of genreNames) {
@@ -297,14 +296,18 @@ async function ensureGenres(genreNames: string[]): Promise<any[]> {
       }
     }
     return results
-  } catch (error) { return [] }
+  } catch (error) {
+    return []
+  }
 }
 
 async function ensureStudios(studioNames: string[]): Promise<any[]> {
   try {
     if (Object.keys(studioCache).length === 0) {
-      const existing = await adminApi.getAllStudiosAdmin()
-      existing.forEach(s => { studioCache[s.name.toLowerCase()] = s.id })
+      const existing = await adminApi.getAllStudiosAdmin(1, 1000)
+      existing.data.forEach((s) => {
+        studioCache[s.name.toLowerCase()] = s.id
+      })
     }
     const results: any[] = []
     for (const name of studioNames) {
@@ -323,15 +326,19 @@ async function ensureStudios(studioNames: string[]): Promise<any[]> {
       }
     }
     return results
-  } catch (error) { return [] }
+  } catch (error) {
+    return []
+  }
 }
 
 async function ensureFranchise(name: string): Promise<any | null> {
   if (!name) return null
   try {
     if (Object.keys(franchiseCache).length === 0) {
-      const existing = await adminApi.getAllFranchisesAdmin()
-      existing.forEach(f => { franchiseCache[f.name.toLowerCase()] = f.id })
+      const existing = await adminApi.getAllFranchisesAdmin(1, 1000)
+      existing.data.forEach((f) => {
+        franchiseCache[f.name.toLowerCase()] = f.id
+      })
     }
     const lowerName = name.toLowerCase()
     if (franchiseCache[lowerName]) {
@@ -340,7 +347,9 @@ async function ensureFranchise(name: string): Promise<any | null> {
     const newFr = await adminApi.createFranchise({ name, slug: slugify(name) })
     franchiseCache[lowerName] = newFr.id
     return newFr
-  } catch (error) { return null }
+  } catch (error) {
+    return null
+  }
 }
 
 /**
@@ -370,7 +379,9 @@ export async function seedFromAniList(limit = 10, page = 1) {
   try {
     const isOnline = await checkBackendStatus()
     if (!isOnline) {
-      throw new Error('Backend chưa được khởi động (Cổng 8080). Hãy bật Server Java lên trước khi nạp dữ liệu.')
+      throw new Error(
+        'Backend chưa được khởi động (Cổng 8080). Hãy bật Server Java lên trước khi nạp dữ liệu.',
+      )
     }
 
     const response = await fetch('https://graphql.anilist.co', {
@@ -386,35 +397,44 @@ export async function seedFromAniList(limit = 10, page = 1) {
 
     for (const anime of data.Page.media) {
       const title = anime.title.english || anime.title.romaji || 'Untitled'
-      
+
       // Đồng bộ thể loại & lấy mảng ID
       const movieGenres = await ensureGenres(anime.genres || [])
-      const genreIds = movieGenres.map(g => g.id)
-      
+      const genreIds = movieGenres.map((g) => g.id)
+
       // Đồng bộ Studio & lấy mảng ID
       const sNames = anime.studios?.edges?.map((e: any) => e.node.name) || []
       const movieStudios = await ensureStudios(sNames)
-      const studioIds = movieStudios.map(s => s.id)
+      const studioIds = movieStudios.map((s) => s.id)
 
-      // Đồng bộ Franchise 
-      const frName = anime.relations?.edges?.find((e: any) => e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL')?.node?.title?.romaji || ''
+      // Đồng bộ Franchise
+      const frName =
+        anime.relations?.edges?.find(
+          (e: any) => e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL',
+        )?.node?.title?.romaji || ''
       const movieFranchise = await ensureFranchise(frName)
 
       const payload: any = {
         title: title.substring(0, 100),
-        description: stripHtml(anime.description)?.substring(0, 500) || '...',
-        posterUrl: anime.coverImage?.extraLarge || anime.coverImage?.large,
-        bannerUrl: anime.bannerImage || anime.coverImage?.extraLarge,
-        type: anime.episodes && anime.episodes > 1 ? 'SERIES' : 'MOVIE',
+        originalTitle: anime.title.native || title,
+        description: stripHtml(anime.description)?.replace(/\n/g, ' ')?.substring(0, 500) || '...',
+        poster: anime.coverImage?.extraLarge || anime.coverImage?.large,
+        banner: anime.bannerImage || anime.coverImage?.extraLarge,
+        type: anime.episodes && anime.episodes > 1 ? 'TV_SERIES' : 'MOVIE',
         status: anime.status === 'FINISHED' ? 'COMPLETED' : 'ONGOING',
-        releaseDate: anime.seasonYear ? `${anime.seasonYear}-01-01` : '2024-01-01',
+        releaseYear: anime.seasonYear || 2024,
+        totalEpisodes: anime.episodes || 1,
         genres: genreIds,
-        studios: studioIds
+        studio: studioIds[0] || undefined,
+        franchise: movieFranchise?.id || undefined,
+        trailerUrl: '',
       }
       try {
         await adminApi.createMovie(payload)
         count++
-        console.log(`[AniList] Đã nạp thành công: ${payload.title} (Genres: ${genreIds.length}, Studios: ${studioIds.length})`)
+        console.log(
+          `[AniList] Đã nạp thành công: ${payload.title} (Genres: ${genreIds.length}, Studio: ${payload.studio ? 'Yes' : 'No'}, Franchise: ${payload.franchise ? 'Yes' : 'No'})`,
+        )
       } catch (err: any) {
         console.warn(`[AniList] Lỗi khi nạp "${payload.title}":`, err.message)
       }
@@ -427,7 +447,7 @@ export async function seedFromAniList(limit = 10, page = 1) {
 }
 
 /**
- * Chỉ nạp Thể loại và Studio từ AniList (Không nạp phim)
+ * Chỉ nạp Thể loại, Studio và Franchise từ AniList (Không nạp phim)
  */
 export async function seedMetadataOnly(limit = 20) {
   const query = `
@@ -436,6 +456,12 @@ export async function seedMetadataOnly(limit = 20) {
         media (type: ANIME, sort: POPULARITY_DESC) {
           genres
           studios (isMain: true) { edges { node { name } } }
+          relations {
+            edges {
+              relationType
+              node { title { romaji } }
+            }
+          }
         }
       }
     }
@@ -449,14 +475,136 @@ export async function seedMetadataOnly(limit = 20) {
     const resValue = await response.json()
     const media = resValue.data?.Page?.media
     if (!media) return 0
-    
+
     for (const anime of media) {
+      // 1. Thể loại
       await ensureGenres(anime.genres || [])
+
+      // 2. Studio
       const sNames = anime.studios?.edges?.map((e: any) => e.node.name) || []
       await ensureStudios(sNames)
-      await new Promise(r => setTimeout(r, 100))
+
+      // 3. Franchise (Prequel/Sequel)
+      const frName =
+        anime.relations?.edges?.find(
+          (e: any) => e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL',
+        )?.node?.title?.romaji || ''
+      if (frName) await ensureFranchise(frName)
+
+      await new Promise((r) => setTimeout(r, 150))
     }
     return 1
-  } catch (e) { throw e }
+  } catch (e) {
+    throw e
+  }
 }
 
+/**
+ * Nạp riêng danh sách thể loại từ các tag phổ biến của AniList
+ */
+export async function seedGenres(limit = 50) {
+  const query = `
+    query {
+      GenreCollection
+    }
+  `
+  try {
+    const response = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    })
+    const { data } = await response.json()
+    const genres = data?.GenreCollection || []
+    if (genres.length > 0) {
+      await ensureGenres(genres.slice(0, limit))
+      return genres.length
+    }
+    return 0
+  } catch (e) {
+    throw e
+  }
+}
+
+/**
+ * Nạp danh sách Studio từ top Anime
+ */
+export async function seedStudios(limit = 30) {
+  const query = `
+    query ($perPage: Int) {
+      Page (page: 1, perPage: $perPage) {
+        media (type: ANIME, sort: POPULARITY_DESC) {
+          studios (isMain: true) { edges { node { name } } }
+        }
+      }
+    }
+  `
+  try {
+    const response = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { perPage: limit } }),
+    })
+    const { data } = await response.json()
+    const media = data?.Page?.media || []
+    let count = 0
+    for (const anime of media) {
+      const sNames = anime.studios?.edges?.map((e: any) => e.node.name) || []
+      if (sNames.length > 0) {
+        await ensureStudios(sNames)
+        count += sNames.length
+      }
+    }
+    return count
+  } catch (e) {
+    throw e
+  }
+}
+
+/**
+ * Nạp Franchise từ top Anime series
+ */
+export async function seedFranchises(limit = 30) {
+  const query = `
+    query ($perPage: Int) {
+      Page (page: 1, perPage: $perPage) {
+        media (type: ANIME, sort: POPULARITY_DESC) {
+          relations {
+            edges {
+              relationType
+              node {
+                title { romaji english native }
+              }
+            }
+          }
+        }
+      }
+    }
+  `
+  try {
+    const response = await fetch('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, variables: { perPage: limit } }),
+    })
+    const { data } = await response.json()
+    const media = data?.Page?.media || []
+    let count = 0
+    for (const anime of media) {
+      const frNames =
+        anime.relations?.edges
+          ?.filter((e: any) => e.relationType === 'PREQUEL' || e.relationType === 'SEQUEL')
+          ?.map((e: any) => e.node.title.romaji || e.node.title.english) || []
+
+      for (const name of frNames) {
+        if (name) {
+          await ensureFranchise(name)
+          count++
+        }
+      }
+    }
+    return count
+  } catch (e) {
+    throw e
+  }
+}

@@ -15,5 +15,6 @@ public class ReviewResponse {
     Integer rating;
     String content;
     UserResponse user;
+    String movieTitle;
     LocalDateTime createdAt;
 }

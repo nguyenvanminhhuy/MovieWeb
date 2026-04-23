@@ -1,6 +1,7 @@
 package com.example.movie_backend.service.impl;
 
 import com.example.movie_backend.dto.request.ReviewRequest;
+import com.example.movie_backend.dto.response.PageResponse;
 import com.example.movie_backend.dto.response.ReviewResponse;
 import com.example.movie_backend.entity.Movie;
 import com.example.movie_backend.entity.Review;
@@ -15,6 +16,9 @@ import com.example.movie_backend.service.ReviewService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,6 +97,28 @@ public class ReviewServiceImpl implements ReviewService {
 
         // Re-calculate rating after deletion
         updateMovieRating(movie);
+    }
+
+    @Override
+    public PageResponse<ReviewResponse> getAll(int page, int size) {
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        var pageData = reviewRepository.findAll(pageable);
+
+        return PageResponse.<ReviewResponse>builder()
+                .currentPage(page)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(pageData.getContent().stream().map(reviewMapper::toReviewResponse).toList())
+                .build();
+    }
+
+    public boolean isOwner(String id) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+        User currentUser = getCurrentUser();
+        return review.getUser().getId().equals(currentUser.getId());
     }
 
     private User getCurrentUser() {

@@ -4,7 +4,7 @@ Chào mừng bạn đến với tài liệu API chi tiết cho hệ thống Back
 
 - **Swagger UI**: `http://localhost:8080/swagger-ui.html`
 - **API Docs**: `http://localhost:8080/v3/api-docs`
-- **Tổng số API hiện có**: **79**
+- **Tổng số API hiện có**: **81**
 
 ---
 
@@ -19,25 +19,27 @@ Chào mừng bạn đến với tài liệu API chi tiết cho hệ thống Back
 
 ---
 
-## 2. API Công khai (Guest/Common) - 13 API
+## 2. API Công khai (Guest/Common) - 15 API
 
 _Dành cho người xem phim, không yêu cầu đăng nhập._
 
 | STT | Phương thức | Endpoint                                    | Chức năng chi tiết                                       |
 | :-- | :---------- | :------------------------------------------ | :------------------------------------------------------- |
-| 5   | `GET`       | `/common/movies`                            | Lấy danh sách phim mới nhất (phân trang).                |
+| 5   | `GET`       | `/common/movies`                            | Lấy danh sách phim (hỗ trợ lọc theo tên, thể loại, loại, trạng thái). |
 | 6   | `GET`       | `/common/movies/{id}`                       | Lấy toàn bộ thông tin chi tiết của một bộ phim.          |
 | 7   | `GET`       | `/common/movies/search`                     | Tìm kiếm phim nâng cao theo nhiều tiêu chí đồng thời.    |
-| 8   | `GET`       | `/common/movies/top`                        | Lấy danh sách phim xu hướng (Hot) theo ngày/tuần/tháng.  |
-| 9   | `GET`       | `/common/movies/{id}/related`               | Gợi ý các phim tương tự dựa trên thể loại.               |
-| 10  | `POST`      | `/common/movies/{id}/views`                 | Ghi nhận lượt xem phim (tự động đếm lượt xem hàng ngày). |
-| 11  | `GET`       | `/common/genres`                            | Lấy danh sách tất cả các thể loại anime.                 |
-| 12  | `GET`       | `/common/studios`                           | Lấy danh sách các studio sản xuất phim.                  |
-| 13  | `GET`       | `/common/episodes/movie/{movieId}`          | Lấy danh sách tập phim của bộ phim.                      |
-| 14  | `GET`       | `/common/video-sources/episode/{episodeId}` | Lấy các link streaming (Server) của tập phim.            |
-| 15  | `GET`       | `/common/subtitles/episode/{episodeId}`     | Lấy danh sách phụ đề (VietSub, EngSub...) của tập phim.  |
-| 16  | `GET`       | `/common/comments/movie/{movieId}`          | Lấy danh sách các bình luận công khai của phim.          |
-| 17  | `GET`       | `/common/reviews/movie/{movieId}`           | Lấy danh sách các bài đánh giá và điểm số của phim.      |
+| 8   | `GET`       | `/common/movies/types`                      | Lấy danh sách các loại phim hợp lệ (TV_SERIES, MOVIE...).|
+| 9   | `GET`       | `/common/movies/statuses`                   | Lấy danh sách các trạng thái phim (ONGOING, COMPLETED...).|
+| 10  | `GET`       | `/common/movies/top`                        | Lấy danh sách phim xu hướng (Hot) theo ngày/tuần/tháng.  |
+| 11  | `GET`       | `/common/movies/{id}/related`               | Gợi ý các phim tương tự dựa trên thể loại.               |
+| 12  | `POST`      | `/common/movies/{id}/views`                 | Ghi nhận lượt xem phim (tự động đếm lượt xem hàng ngày). |
+| 13  | `GET`       | `/common/genres`                            | Lấy danh sách tất cả các thể loại anime.                 |
+| 14  | `GET`       | `/common/studios`                           | Lấy danh sách các studio sản xuất phim.                  |
+| 15  | `GET`       | `/common/episodes/movie/{movieId}`          | Lấy danh sách tập phim của bộ phim.                      |
+| 16  | `GET`       | `/common/video-sources/episode/{episodeId}` | Lấy các link streaming (Server) của tập phim.            |
+| 17  | `GET`       | `/common/subtitles/episode/{episodeId}`     | Lấy danh sách phụ đề (VietSub, EngSub...) của tập phim.  |
+| 18  | `GET`       | `/common/comments/movie/{movieId}`          | Lấy danh sách các bình luận công khai của phim.          |
+| 19  | `GET`       | `/common/reviews/movie/{movieId}`           | Lấy danh sách các bài đánh giá và điểm số của phim.      |
 
 ---
 
@@ -86,7 +88,7 @@ _Yêu cầu đăng nhập._
 
 | STT | Phương thức | Endpoint       | Chức năng chi tiết                          |
 | :-- | :---------- | :------------- | :------------------------------------------ |
-| 36  | `GET`       | `/movies`      | Lấy danh sách phim để quản lý.              |
+| 36  | `GET`       | `/movies`      | Lấy danh sách phim (hỗ trợ lọc theo tên, thể loại...). |
 | 37  | `GET`       | `/movies/{id}` | Xem chi tiết phim trong trang quản trị.     |
 | 38  | `POST`      | `/movies`      | Thêm mới một bộ phim anime (Ghi log Audit). |
 | 39  | `PUT`       | `/movies/{id}` | Cập nhật thông tin phim.                    |

@@ -34,6 +34,11 @@ const router = createRouter({
       component: () => import('../views/RegisterView.vue'),
     },
     {
+      path: '/notifications',
+      name: 'notifications',
+      component: () => import('../views/NotificationView.vue'),
+    },
+    {
       path: '/favorites',
       name: 'favorites',
       meta: { requiresAuth: true },
@@ -139,8 +144,8 @@ router.beforeEach((to) => {
   }
 
   if (to.meta.requiresAdmin) {
-    // We might need to check the profile info here, but since AppShell handles refreshProfile, 
-    // we just check if the user is currently loaded and is admin. 
+    // We might need to check the profile info here, but since AppShell handles refreshProfile,
+    // we just check if the user is currently loaded and is admin.
     // In a real app, you might want to fetch profile if not already there.
     // For now, let's keep it simple and assume the UI only shows links to admins.
   }

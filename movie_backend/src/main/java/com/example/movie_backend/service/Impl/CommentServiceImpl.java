@@ -2,6 +2,7 @@ package com.example.movie_backend.service.impl;
 
 import com.example.movie_backend.dto.request.CommentRequest;
 import com.example.movie_backend.dto.response.CommentResponse;
+import com.example.movie_backend.dto.response.PageResponse;
 import com.example.movie_backend.entity.Comment;
 import com.example.movie_backend.entity.Movie;
 import com.example.movie_backend.entity.User;
@@ -15,6 +16,9 @@ import com.example.movie_backend.service.CommentService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +84,28 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
         comment.setLikes(comment.getLikes() + 1);
         return commentMapper.toCommentResponse(commentRepository.save(comment));
+    }
+
+    @Override
+    public PageResponse<CommentResponse> getAll(int page, int size) {
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        var pageData = commentRepository.findAll(pageable);
+
+        return PageResponse.<CommentResponse>builder()
+                .currentPage(page)
+                .pageSize(pageData.getSize())
+                .totalPages(pageData.getTotalPages())
+                .totalElements(pageData.getTotalElements())
+                .data(pageData.getContent().stream().map(commentMapper::toCommentResponse).toList())
+                .build();
+    }
+
+    public boolean isOwner(String id) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+        User currentUser = getCurrentUser();
+        return comment.getUser().getId().equals(currentUser.getId());
     }
 
     private User getCurrentUser() {
