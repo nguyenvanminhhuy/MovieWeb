@@ -14,5 +14,6 @@ public interface CommentMapper {
     @Mapping(target = "replies", ignore = true)
     Comment toComment(CommentRequest request);
 
+    @Mapping(source = "movie.title", target = "movieTitle")
     CommentResponse toCommentResponse(Comment comment);
 }

@@ -49,17 +49,22 @@ export function updateUserStatus(userId: string, enabled: boolean) {
   })
 }
 
+export function updateUser(id: string, data: Partial<UserResponse>) {
+  return apiFetch<UserResponse>(`/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
 export function deleteUser(userId: string) {
   return apiFetch<null>(`/users/${userId}`, {
     method: 'DELETE',
   })
 }
 
-// Comment Management (Admin uses DELETE /comments/{id}; no dedicated admin list endpoint in API)
+// Comment Management
 export function getAllCommentsAdmin(page = 1, size = 20) {
-  // Note: Backend does not expose a paginated admin comment list endpoint.
-  // Using common endpoint as fallback — filter by movieId would be needed in production.
-  return apiFetch<PageResponse<CommentResponse>>(`/common/comments?page=${page}&size=${size}`)
+  return apiFetch<PageResponse<CommentResponse>>(`/comments?page=${page}&size=${size}`)
 }
 
 export function deleteCommentAdmin(commentId: string) {
@@ -217,12 +222,49 @@ export function deleteReviewAdmin(reviewId: string) {
 
 // Statistics
 export function getAdminStats() {
-  return apiFetch<any>('/admin/stats/dashboard')
+  return apiFetch<{
+    totalUsers: number
+    totalMovies: number
+    totalEpisodes: number
+    totalViews: number
+    activeUsers: number
+    newUsersThisMonth: number
+    totalComments: number
+    totalReviews: number
+    totalReports: number
+    unresolvedReports: number
+    totalGenres?: number
+    totalStudios?: number
+    totalFranchises?: number
+  }>('/admin/stats/dashboard')
 }
 
 // Audit Logs
 export function getAuditLogs(page = 1, size = 50) {
   return apiFetch<PageResponse<any>>(`/admin/audit-logs?page=${page}&size=${size}`)
+}
+
+// Media Upload
+export async function uploadMedia(file: File, folder = 'general') {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('folder', folder)
+
+  const token = localStorage.getItem('access_token')
+  const res = await fetch(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'}/media/upload`,
+    {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    },
+  )
+
+  if (!res.ok) throw new Error('Upload failed')
+  const data = await res.json()
+  return data.result as string
 }
 
 // Report Management

@@ -12,5 +12,6 @@ public interface ReviewMapper {
     @Mapping(target = "movie", ignore = true)
     Review toReview(ReviewRequest request);
 
+    @Mapping(source = "movie.title", target = "movieTitle")
     ReviewResponse toReviewResponse(Review review);
 }

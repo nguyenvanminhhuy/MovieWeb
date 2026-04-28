@@ -30,11 +30,15 @@ public class MovieController {
     })
     @GetMapping
     public com.example.movie_backend.dto.response.ApiResponse<com.example.movie_backend.dto.response.PageResponse<MovieResponse>> getAllMovies(
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "genreId", required = false) String genreId,
+            @RequestParam(value = "type", required = false) com.example.movie_backend.enums.MovieType type,
+            @RequestParam(value = "status", required = false) com.example.movie_backend.enums.MovieStatus status,
             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
             @RequestParam(value = "size", required = false, defaultValue = "10") int size
     ) {
         return com.example.movie_backend.dto.response.ApiResponse.<com.example.movie_backend.dto.response.PageResponse<MovieResponse>>builder()
-                .result(movieService.getAll(page, size))
+                .result(movieService.getAll(query, genreId, type, status, page, size))
                 .build();
     }
 

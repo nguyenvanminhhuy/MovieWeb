@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface MovieRepository extends JpaRepository<Movie, String> {
     Optional<Movie> findByTitle(String title);
 
-    @Query("SELECT m FROM Movie m JOIN m.genres g WHERE " +
+    @Query("SELECT DISTINCT m FROM Movie m LEFT JOIN m.genres g WHERE " +
             "(:query IS NULL OR LOWER(m.title) LIKE LOWER(CONCAT('%', :query, '%'))) AND " +
             "(:genreId IS NULL OR g.id = :genreId) AND " +
             "(:franchiseId IS NULL OR m.franchise.id = :franchiseId) AND " +

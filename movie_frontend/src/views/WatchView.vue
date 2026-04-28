@@ -31,17 +31,19 @@ const actionMsg = ref('')
 
 const movieId = computed(() => route.params.movieId as string)
 
-const selectedEpisode = computed(() =>
-  episodes.value.find((e) => e.id === selectedId.value),
-)
+const selectedEpisode = computed(() => episodes.value.find((e) => e.id === selectedId.value))
 
 let historyTimer: ReturnType<typeof setTimeout> | null = null
 
-function scheduleHistorySave(currentTime: number) {
+function scheduleHistorySave(currentTime: number, totalDuration: number) {
   if (!isLoggedIn.value || !selectedId.value) return
   if (historyTimer) clearTimeout(historyTimer)
   historyTimer = setTimeout(() => {
-    void api.saveWatchProgress(selectedId.value!, Math.floor(currentTime))
+    void api.saveWatchProgress(
+      selectedId.value!,
+      Math.floor(currentTime),
+      Math.floor(totalDuration),
+    )
   }, 10000)
 }
 
@@ -184,6 +186,18 @@ async function toggleFavorite() {
   }
 }
 
+async function reportError() {
+  if (!isLoggedIn.value || !movie.value) return
+  const reason = prompt('Lý do báo cáo (VD: Link hỏng, Phụ đề sai...):')
+  if (!reason) return
+  const description = prompt('Mô tả chi tiết lỗi:') || ''
+  try {
+    await api.createReport({ movieId: movie.value.id, reason, description })
+    alert('Cảm ơn bạn đã báo cáo! Chúng tôi sẽ kiểm tra sớm.')
+  } catch (e) {
+    alert('Lỗi: ' + e)
+  }
+}
 </script>
 
 <template>
@@ -208,12 +222,20 @@ async function toggleFavorite() {
             >
               {{ favorited ? '♥ Đã thích' : '♡ Yêu thích' }}
             </button>
+            <button
+              v-if="isLoggedIn"
+              type="button"
+              class="rounded-full border border-red-500/30 px-4 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
+              @click="reportError"
+            >
+              ⚠ Báo lỗi
+            </button>
           </div>
 
           <VideoPlayer
             :sources="sources"
             :subtitles="subtitles"
-            @timeupdate="(ct) => scheduleHistorySave(ct)"
+            @timeupdate="(ct, dur) => scheduleHistorySave(ct, dur)"
           />
 
           <p v-if="selectedEpisode" class="text-sm text-zinc-500">
@@ -226,18 +248,18 @@ async function toggleFavorite() {
           class="w-full shrink-0 rounded-xl bg-zinc-900/60 p-4 ring-1 ring-white/10 lg:w-80 xl:w-96"
         >
           <h3 class="font-semibold text-zinc-200">Danh sách tập</h3>
-          <ul class="mt-3 max-h-[480px] space-y-1 overflow-y-auto pr-1">
+          <ul class="mt-3 max-h-120 space-y-1 overflow-y-auto pr-1">
             <li v-for="ep in episodes" :key="ep.id">
               <button
                 type="button"
                 class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition"
-                :class="
-                  ep.id === selectedId ? 'bg-violet-600/40 text-white' : 'hover:bg-white/10'
-                "
+                :class="ep.id === selectedId ? 'bg-violet-600/40 text-white' : 'hover:bg-white/10'"
                 @click="selectEpisode(ep)"
               >
                 <span>Tập {{ ep.episodeNumber }}</span>
-                <span class="text-xs text-zinc-500">{{ ep.duration ? `${ep.duration}′` : '' }}</span>
+                <span class="text-xs text-zinc-500">{{
+                  ep.duration ? `${ep.duration}′` : ''
+                }}</span>
               </button>
             </li>
           </ul>
@@ -249,7 +271,10 @@ async function toggleFavorite() {
         <div>
           <h3 class="text-lg font-bold">Bình luận</h3>
           <div v-if="isLoggedIn" id="comment-box" class="mt-4 space-y-2">
-            <p v-if="replyTo" class="text-xs text-violet-400">Trả lời bình luận — <button type="button" class="underline" @click="replyTo = null">Hủy</button></p>
+            <p v-if="replyTo" class="text-xs text-violet-400">
+              Trả lời bình luận —
+              <button type="button" class="underline" @click="replyTo = null">Hủy</button>
+            </p>
             <textarea
               v-model="commentText"
               rows="3"
@@ -267,12 +292,7 @@ async function toggleFavorite() {
           <p v-else class="mt-4 text-sm text-zinc-500">
             <RouterLink to="/login" class="text-violet-400">Đăng nhập</RouterLink> để bình luận.
           </p>
-          <CommentThread
-            class="mt-6"
-            :comments="comments"
-            @reply="onReply"
-            @like="onLikeComment"
-          />
+          <CommentThread class="mt-6" :comments="comments" @reply="onReply" @like="onLikeComment" />
         </div>
 
         <div>

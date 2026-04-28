@@ -119,6 +119,8 @@ export interface UserResponse {
 export interface CommentResponse {
   id: string
   movieId?: string
+  movieTitle?: string
+  moviePoster?: string
   userId?: string
   userName?: string
   content: string
@@ -131,6 +133,8 @@ export interface CommentResponse {
 export interface ReviewResponse {
   id: string
   movieId?: string
+  movieTitle?: string
+  moviePoster?: string
   userId?: string
   userName?: string
   rating?: number

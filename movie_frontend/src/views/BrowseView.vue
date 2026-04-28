@@ -21,13 +21,11 @@ async function load() {
   loading.value = true
   err.value = ''
   try {
-    const res = await api.searchMovies({
+    const res = await api.getMovies(page.value, 18, {
       query: q.value || undefined,
       genreId: genreId.value || undefined,
       type: type.value || undefined,
       status: status.value || undefined,
-      page: page.value,
-      size: 18,
     })
     movies.value = res.data
     totalPages.value = res.totalPages
@@ -63,7 +61,6 @@ function goPage(p: number) {
   <AppShell>
     <div class="mb-8">
       <h1 class="text-2xl font-bold">Khám phá anime</h1>
-      <p class="mt-1 text-zinc-500">Tìm kiếm và lọc theo thể loại, trạng thái, loại hình.</p>
     </div>
 
     <div
@@ -95,9 +92,10 @@ function goPage(p: number) {
           class="rounded-lg border border-white/10 bg-zinc-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
         >
           <option value="">Tất cả</option>
-          <option value="SERIES">TV Series</option>
+          <option value="TV_SERIES">TV Series</option>
           <option value="MOVIE">Movie</option>
-          <option value="ONA">ONA</option>
+          <option value="OVA">OVA</option>
+          <option value="SPECIAL">Special</option>
         </select>
       </label>
       <label class="flex min-w-[160px] flex-col gap-1 text-sm">

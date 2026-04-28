@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import * as api from '../api/animeApi'
 import AppShell from '../components/AppShell.vue'
@@ -37,7 +37,7 @@ async function submit() {
 
       <form class="mt-8 space-y-4" @submit.prevent="submit">
         <label class="block text-sm">
-          <span class="text-zinc-500">Tên đăng nhập</span>
+          <span class="text-zinc-500">Tên đăng nhập *</span>
           <input
             v-model="username"
             required
@@ -47,7 +47,7 @@ async function submit() {
           />
         </label>
         <label class="block text-sm">
-          <span class="text-zinc-500">Email</span>
+          <span class="text-zinc-500">Email *</span>
           <input
             v-model="email"
             type="email"
@@ -57,7 +57,7 @@ async function submit() {
           />
         </label>
         <label class="block text-sm">
-          <span class="text-zinc-500">Mật khẩu (tối thiểu 8 ký tự)</span>
+          <span class="text-zinc-500">Mật khẩu (tối thiểu 8 ký tự) *</span>
           <input
             v-model="password"
             type="password"

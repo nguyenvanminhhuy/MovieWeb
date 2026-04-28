@@ -21,6 +21,11 @@ async function fetchLogs() {
   }
 }
 
+function changePage(p: number) {
+  page.value = p
+  fetchLogs()
+}
+
 function getActionColor(action: string) {
   if (action?.includes('CREATE')) return 'success'
   if (action?.includes('DELETE')) return 'danger'
@@ -77,29 +82,160 @@ onMounted(fetchLogs)
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="pagination mt-6">
+        <button @click="changePage(Math.max(1, page - 1))" :disabled="page === 1" class="page-btn">
+          ‹
+        </button>
+        <button
+          v-for="p in totalPages"
+          :key="p"
+          @click="changePage(p)"
+          :class="['page-btn', page === p ? 'active' : '']"
+        >
+          {{ p }}
+        </button>
+        <button
+          @click="changePage(Math.min(totalPages, page + 1))"
+          :disabled="page === totalPages"
+          class="page-btn"
+        >
+          ›
+        </button>
+      </div>
     </div>
   </AdminLayout>
 </template>
 
 <style scoped>
-.page { display: flex; flex-direction: column; gap: 20px; }
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; }
-.page-title { font-size: 24px; font-weight: 800; color: #f4f4f5; margin: 0; }
-.page-subtitle { font-size: 13px; color: #71717a; }
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.page-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #f4f4f5;
+  margin: 0;
+}
+.page-subtitle {
+  font-size: 13px;
+  color: #71717a;
+}
 
-.table-card { background: #18181b; border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; overflow: hidden; }
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table th { padding: 12px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #52525b; text-align: left; background: rgba(255,255,255,0.02); }
-.data-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.table-card {
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table th {
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #52525b;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+}
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
 
-.action-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
-.action-badge.success { background: rgba(34,197,94,0.1); color: #4ade80; }
-.action-badge.danger { background: rgba(239,68,68,0.1); color: #f87171; }
-.action-badge.warning { background: rgba(245,158,11,0.1); color: #fbbf24; }
-.action-badge.info { background: rgba(59,130,246,0.1); color: #60a5fa; }
+.action-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.action-badge.success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #4ade80;
+}
+.action-badge.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+.action-badge.warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: #fbbf24;
+}
+.action-badge.info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #60a5fa;
+}
 
-.skeleton { background: rgba(255,255,255,0.05); border-radius: 4px; animation: pulse 1.5s infinite; }
-@keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+.skeleton {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
 
-.btn-secondary { background: #27272a; color: #e4e4e7; border: 1px solid rgba(255,255,255,0.08); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-secondary {
+  background: #27272a;
+  color: #e4e4e7;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.page-btn {
+  padding: 7px 13px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: #18181b;
+  color: #71717a;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.page-btn:hover:not(:disabled) {
+  background: #27272a;
+  color: #e4e4e7;
+}
+.page-btn.active {
+  background: #7c3aed;
+  color: white;
+  border-color: #7c3aed;
+}
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.mt-6 {
+  margin-top: 24px;
+}
 </style>

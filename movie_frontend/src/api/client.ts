@@ -27,19 +27,27 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   }
 
   const res = await fetch(`${API_PREFIX}${path}`, { ...init, headers })
-  let json: ApiResponse<T> | { code: number; message?: string } | null = null
-  try {
-    json = await res.json()
-  } catch {
-    throw new ApiError(res.status, res.statusText || 'Invalid response')
+  
+  if (res.status === 204) {
+    return null as any
   }
 
-  const code = (json as { code?: number }).code
-  const message = (json as { message?: string }).message ?? 'Request failed'
-
-  if (!res.ok || (code !== undefined && code !== 1000)) {
-    throw new ApiError(code ?? res.status, message)
+  let json: any = null
+  const contentType = res.headers.get('Content-Type')
+  if (contentType && contentType.includes('application/json')) {
+    try {
+      json = await res.json()
+    } catch {
+      // Ignore parse error if status is OK
+      if (!res.ok) throw new ApiError(res.status, 'Invalid JSON response')
+    }
   }
 
-  return (json as ApiResponse<T>).result
+  if (!res.ok) {
+    const message = json?.message || res.statusText || 'Request failed'
+    const code = json?.code || res.status
+    throw new ApiError(code, message)
+  }
+
+  return json?.result ?? json
 }

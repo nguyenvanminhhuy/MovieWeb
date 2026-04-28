@@ -119,20 +119,22 @@ This document serves as a quick reference guide mapping every endpoint to its im
 
 ## Comment API (`/comments`)
 
-| Endpoint              | Method | Auth | Doc Status | Controller                                                                                                 | Params |
-| --------------------- | ------ | ---- | ---------- | ---------------------------------------------------------------------------------------------------------- | ------ |
-| `/comments`           | POST   | ⚠️   | ⚠️         | [CommentController.java:22](src/main/java/com/example/movie_backend/controller/CommentController.java#L22) | -      |
-| `/comments/{id}/like` | POST   | ⚠️   | ⚠️         | [CommentController.java:29](src/main/java/com/example/movie_backend/controller/CommentController.java#L29) | `id`   |
-| `/comments/{id}`      | DELETE | ✅   | ✅         | [CommentController.java:36](src/main/java/com/example/movie_backend/controller/CommentController.java#L36) | `id`   |
+| Endpoint              | Method | Auth     | Doc Status | Controller                                                                                                 | Params         |
+| --------------------- | ------ | -------- | ---------- | ---------------------------------------------------------------------------------------------------------- | -------------- |
+| `/comments`           | GET    | ✅ ADMIN | ✅         | [CommentController.java:27](src/main/java/com/example/movie_backend/controller/CommentController.java#L27) | `page`, `size` |
+| `/comments`           | POST   | ✅       | ✅         | [CommentController.java:39](src/main/java/com/example/movie_backend/controller/CommentController.java#L39) | -              |
+| `/comments/{id}/like` | POST   | ✅       | ✅         | [CommentController.java:48](src/main/java/com/example/movie_backend/controller/CommentController.java#L48) | `id`           |
+| `/comments/{id}`      | DELETE | ✅       | ✅         | [CommentController.java:57](src/main/java/com/example/movie_backend/controller/CommentController.java#L57) | `id`           |
 
 ---
 
 ## Review API (`/reviews`)
 
-| Endpoint        | Method | Auth     | Doc Status | Controller                                                                                               | Params |
-| --------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | ------ |
-| `/reviews`      | POST   | ⚠️       | ⚠️         | [ReviewController.java:23](src/main/java/com/example/movie_backend/controller/ReviewController.java#L23) | -      |
-| `/reviews/{id}` | DELETE | ✅ ADMIN | ✅         | [ReviewController.java:30](src/main/java/com/example/movie_backend/controller/ReviewController.java#L30) | `id`   |
+| Endpoint        | Method | Auth     | Doc Status | Controller                                                                                               | Params         |
+| --------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | -------------- |
+| `/reviews`      | GET    | ✅ ADMIN | ✅         | [ReviewController.java:28](src/main/java/com/example/movie_backend/controller/ReviewController.java#L28) | `page`, `size` |
+| `/reviews`      | POST   | ✅       | ✅         | [ReviewController.java:40](src/main/java/com/example/movie_backend/controller/ReviewController.java#L40) | -              |
+| `/reviews/{id}` | DELETE | ✅       | ✅         | [ReviewController.java:49](src/main/java/com/example/movie_backend/controller/ReviewController.java#L49) | `id`           |
 
 ---
 
@@ -254,5 +256,5 @@ This document serves as a quick reference guide mapping every endpoint to its im
 
 ---
 
-**Last Updated:** 2026-03-25  
+**Last Updated:** 2026-04-07  
 **Maintenance Status:** Ready for implementation
