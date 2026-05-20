@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/franchises")
@@ -24,7 +25,7 @@ public class FranchiseController {
     @Operation(summary = "Tạo mới Franchise")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    ApiResponse<FranchiseResponse> create(@RequestBody FranchiseRequest request) {
+    ApiResponse<FranchiseResponse> create(@RequestBody @Valid FranchiseRequest request) {
         return ApiResponse.<FranchiseResponse>builder()
                 .result(franchiseService.create(request))
                 .build();
@@ -51,7 +52,7 @@ public class FranchiseController {
     @Operation(summary = "Cập nhật Franchise")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    ApiResponse<FranchiseResponse> update(@PathVariable String id, @RequestBody FranchiseRequest request) {
+    ApiResponse<FranchiseResponse> update(@PathVariable String id, @RequestBody @Valid FranchiseRequest request) {
         return ApiResponse.<FranchiseResponse>builder()
                 .result(franchiseService.update(id, request))
                 .build();

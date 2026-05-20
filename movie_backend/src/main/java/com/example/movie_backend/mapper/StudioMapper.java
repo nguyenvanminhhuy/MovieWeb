@@ -9,6 +9,8 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface StudioMapper {
     Studio toStudio(StudioRequest request);
+
     StudioResponse toStudioResponse(Studio studio);
+
     void updateStudio(@MappingTarget Studio studio, StudioRequest request);
 }

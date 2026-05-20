@@ -2,6 +2,7 @@ package com.example.movie_backend.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 @Builder
@@ -11,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 public class ReportRequest {
     String movieId;
     String episodeId;
+    @NotBlank(message = "REASON_REQUIRED")
     String reason;
     String description;
 }

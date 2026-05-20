@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/episodes")
@@ -25,7 +26,7 @@ public class EpisodeController {
 
     @Operation(summary = "Tạo mới tập phim")
     @PostMapping
-    ApiResponse<EpisodeResponse> create(@RequestBody EpisodeRequest request) {
+    ApiResponse<EpisodeResponse> create(@RequestBody @Valid EpisodeRequest request) {
         return ApiResponse.<EpisodeResponse>builder()
                 .result(episodeService.create(request))
                 .build();
@@ -41,7 +42,7 @@ public class EpisodeController {
 
     @Operation(summary = "Cập nhật tập phim")
     @PutMapping("/{id}")
-    ApiResponse<EpisodeResponse> update(@PathVariable String id, @RequestBody EpisodeRequest request) {
+    ApiResponse<EpisodeResponse> update(@PathVariable String id, @RequestBody @Valid EpisodeRequest request) {
         return ApiResponse.<EpisodeResponse>builder()
                 .result(episodeService.update(id, request))
                 .build();

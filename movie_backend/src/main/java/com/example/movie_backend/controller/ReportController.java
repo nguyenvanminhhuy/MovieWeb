@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/reports")
@@ -23,7 +24,7 @@ public class ReportController {
 
     @Operation(summary = "Gửi báo cáo lỗi/vi phạm")
     @PostMapping
-    ApiResponse<ReportResponse> createReport(@RequestBody ReportRequest request) {
+    ApiResponse<ReportResponse> createReport(@RequestBody @Valid ReportRequest request) {
         return ApiResponse.<ReportResponse>builder()
                 .result(reportService.create(request))
                 .build();

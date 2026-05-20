@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/permissions")
@@ -25,7 +26,7 @@ public class PermissionController {
 
     @Operation(summary = "Tạo mới quyền hạn")
     @PostMapping
-    ApiResponse<PermissionResponse> create(@RequestBody PermissionRequest request) {
+    ApiResponse<PermissionResponse> create(@RequestBody @Valid PermissionRequest request) {
         return ApiResponse.<PermissionResponse>builder()
                 .result(permissionService.create(request))
                 .build();

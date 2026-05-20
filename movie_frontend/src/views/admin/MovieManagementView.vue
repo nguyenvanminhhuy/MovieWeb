@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import AdminLayout from '../../components/AdminLayout.vue'
 import * as adminApi from '../../api/adminApi'
+import * as animeApi from '../../api/animeApi'
 import type { MovieResponse } from '../../api/types'
 import { mediaUrl } from '../../utils/media'
 import {
@@ -67,7 +68,12 @@ async function fetchMovies() {
     return
   }
   try {
-    const res = await adminApi.getAllMoviesAdmin(page.value, 12)
+    let res
+    if (search.value.trim()) {
+      res = await animeApi.searchMovies({ query: search.value.trim(), page: page.value, size: 12 })
+    } else {
+      res = await adminApi.getAllMoviesAdmin(page.value, 12)
+    }
     movies.value = res.data
     totalPages.value = res.totalPages
     totalElements.value = res.totalElements
@@ -136,29 +142,41 @@ function changePage(p: number) {
 async function handleSave() {
   saving.value = true
   try {
-    // Build payload matching the backend API format
+    // Build payload matching the backend API format (with fallbacks for older API version)
     const payload: any = {
       title: form.value.title,
       description: form.value.description,
       posterUrl: form.value.posterUrl,
       bannerUrl: form.value.bannerUrl,
+      poster: form.value.posterUrl, // fallback
+      banner: form.value.bannerUrl, // fallback
       type: form.value.type,
       status: form.value.status,
       releaseDate: form.value.releaseDate || undefined,
+      releaseYear: form.value.releaseDate
+        ? parseInt(form.value.releaseDate.substring(0, 4))
+        : undefined, // fallback
       trailerUrl: form.value.trailerUrl || undefined,
-      genres: form.value.genres, // array of genre IDs
-      studios: form.value.studios, // array of studio IDs
+      genres: form.value.genres.map((id: string) => ({ id })), // Send as objects for Spring Boot
+      genreIds: form.value.genres, // fallback
+      studios: form.value.studioId ? [{ id: form.value.studioId }] : [], // Send as objects
+      studioIds: form.value.studioId ? [form.value.studioId] : [], // fallback
+      studio: form.value.studioId ? { id: form.value.studioId } : null, // fallback as object
+      studioId: form.value.studioId || null, // fallback as string
     }
 
     if (editingMovie.value?.id) {
       await adminApi.updateMovie(editingMovie.value.id, payload)
+      alert('✅ Cập nhật phim thành công!')
     } else {
       await adminApi.createMovie(payload)
+      alert('✅ Thêm phim mới thành công!')
     }
     closeModal()
     await fetchMovies()
   } catch (e) {
-    alert(e instanceof Error ? e.message : 'Lỗi khi lưu')
+    console.error('Lỗi lưu phim:', e)
+    alert('❌ Lỗi: ' + (e instanceof Error ? e.message : 'Không xác định'))
   } finally {
     saving.value = false
   }
@@ -176,7 +194,7 @@ function openAddModal() {
     releaseDate: new Date().toISOString().slice(0, 10),
     trailerUrl: '',
     genres: [],
-    studios: [],
+    studioId: '',
   }
   showAddModal.value = true
 }
@@ -193,11 +211,14 @@ function openEditModal(m: MovieResponse) {
     releaseDate: m.releaseDate || (m.releaseYear ? `${m.releaseYear}-01-01` : ''),
     trailerUrl: m.trailerUrl || '',
     genres: m.genres ? m.genres.map((g: any) => g.id || g) : [],
-    studios: m.studios
-      ? (m.studios as any[]).map((s: any) => s.id || s)
-      : m.studio
-        ? [typeof m.studio === 'string' ? m.studio : m.studio.id]
-        : [],
+    studioId:
+      m.studios && m.studios.length > 0
+        ? (m.studios[0] as any).id || m.studios[0]
+        : m.studio
+          ? typeof m.studio === 'string'
+            ? m.studio
+            : m.studio.id
+          : '',
   }
   showAddModal.value = true
 }
@@ -206,6 +227,15 @@ function closeModal() {
   showAddModal.value = false
   editingMovie.value = null
 }
+
+let searchTimeout: any = null
+watch(search, () => {
+  if (searchTimeout) clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    page.value = 1
+    fetchMovies()
+  }, 500)
+})
 
 onMounted(fetchMovies)
 </script>
@@ -332,9 +362,7 @@ onMounted(fetchMovies)
             <!-- Data -->
             <tr
               v-else
-              v-for="m in movies.filter(
-                (x) => !search || x.title.toLowerCase().includes(search.toLowerCase()),
-              )"
+              v-for="m in movies"
               :key="m.id"
               class="data-row"
             >
@@ -343,7 +371,6 @@ onMounted(fetchMovies)
                   <img :src="mediaUrl(m.poster)" class="movie-poster" alt="" />
                   <div>
                     <div class="movie-title">{{ m.title }}</div>
-                    <div class="movie-id">{{ m.id.slice(0, 8) }}...</div>
                   </div>
                 </div>
               </td>
@@ -351,7 +378,9 @@ onMounted(fetchMovies)
                 <span class="type-badge">{{ m.type }}</span>
               </td>
               <td class="text-muted">{{ m.releaseYear || '—' }}</td>
-              <td class="text-muted">{{ m.totalEpisodes || '—' }}</td>
+              <td class="text-muted">
+                {{ m.episodeCount !== undefined ? m.episodeCount : '0' }} tập
+              </td>
               <td>
                 <span
                   :class="[
@@ -442,6 +471,7 @@ onMounted(fetchMovies)
           </div>
           <form @submit.prevent="handleSave" class="modal-body">
             <div class="form-grid">
+              <!-- Row 1: Tên phim -->
               <div class="form-group span-2">
                 <label>Tên phim</label>
                 <input
@@ -451,6 +481,14 @@ onMounted(fetchMovies)
                   required
                 />
               </div>
+
+              <!-- Row 2: Mô tả -->
+              <div class="form-group span-2">
+                <label>Mô tả</label>
+                <textarea v-model="form.description" class="form-input" rows="3"></textarea>
+              </div>
+
+              <!-- Row 3: Loại & Trạng thái -->
               <div class="form-group">
                 <label>Loại</label>
                 <select v-model="form.type" class="form-input">
@@ -469,20 +507,18 @@ onMounted(fetchMovies)
                   <option value="UPCOMING">Sắp chiếu</option>
                 </select>
               </div>
+
+              <!-- Row 4: Ngày phát hành & Trailer -->
               <div class="form-group">
                 <label>Ngày phát hành</label>
                 <input v-model="form.releaseDate" type="date" class="form-input" />
               </div>
               <div class="form-group">
-                <label>Studios (Giữ Ctrl để chọn nhiều)</label>
-                <select v-model="form.studios" class="form-input" multiple style="height: 80px">
-                  <option v-for="s in allStudios" :key="s.id" :value="s.id">{{ s.name }}</option>
-                </select>
+                <label>Trailer URL (Youtube)</label>
+                <input v-model="form.trailerUrl" class="form-input" placeholder="https://..." />
               </div>
-              <div class="form-group span-2">
-                <label>Mô tả</label>
-                <textarea v-model="form.description" class="form-input" rows="3"></textarea>
-              </div>
+
+              <!-- Row 5: Poster & Banner -->
               <div class="form-group">
                 <label>Poster URL</label>
                 <input v-model="form.posterUrl" class="form-input" placeholder="https://..." />
@@ -491,15 +527,55 @@ onMounted(fetchMovies)
                 <label>Banner URL</label>
                 <input v-model="form.bannerUrl" class="form-input" placeholder="https://..." />
               </div>
+
+              <!-- Row 6: Studio -->
               <div class="form-group span-2">
-                <label>Trailer URL (Youtube)</label>
-                <input v-model="form.trailerUrl" class="form-input" placeholder="https://..." />
+                <label>Studio liên kết (Chọn 1)</label>
+                <div class="selection-grid">
+                  <label v-for="s in allStudios" :key="s.id" class="selection-card">
+                    <input type="radio" :value="s.id" v-model="form.studioId" name="studio_radio" />
+                    <div class="card-content">
+                      <div class="card-icon" v-if="form.studioId === s.id">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <span class="card-text">{{ s.name }}</span>
+                    </div>
+                  </label>
+                </div>
               </div>
+
+              <!-- Row 7: Thể loại -->
               <div class="form-group span-2">
-                <label>Thể loại (Giữ Ctrl để chọn nhiều)</label>
-                <select v-model="form.genres" class="form-input" multiple style="height: 100px">
-                  <option v-for="g in allGenres" :key="g.id" :value="g.id">{{ g.name }}</option>
-                </select>
+                <label>Thể loại liên kết</label>
+                <div class="selection-grid large">
+                  <label v-for="g in allGenres" :key="g.id" class="selection-card">
+                    <input type="checkbox" :value="g.id" v-model="form.genres" />
+                    <div class="card-content">
+                      <div class="card-icon" v-if="form.genres.includes(g.id)">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </div>
+                      <span class="card-text">{{ g.name }}</span>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
             <div class="modal-footer">
@@ -996,5 +1072,111 @@ onMounted(fetchMovies)
 }
 .form-input:focus {
   border-color: #7c3aed;
+}
+
+.selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.selection-grid.large {
+  max-height: 260px;
+}
+.selection-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.selection-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.selection-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.selection-card {
+  cursor: pointer;
+  position: relative;
+  display: block;
+}
+.selection-card input {
+  display: none;
+}
+.card-content {
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 12px;
+  text-align: center;
+  transition: all 0.2s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.card-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #a1a1aa;
+  z-index: 2;
+  transition: color 0.2s ease;
+}
+.selection-card:hover .card-content {
+  background: #27272a;
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+.selection-card:hover .card-text {
+  color: #e4e4e7;
+}
+
+.selection-card input:checked + .card-content {
+  background: rgba(124, 58, 237, 0.08);
+  border-color: #7c3aed;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.15);
+}
+.selection-card input:checked + .card-content .card-text {
+  color: #c084fc;
+  font-weight: 600;
+}
+
+.card-icon {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 28px 28px 0;
+  border-color: transparent #7c3aed transparent transparent;
+  z-index: 1;
+}
+.card-icon svg {
+  position: absolute;
+  top: 3px;
+  right: -25px;
+  width: 12px;
+  height: 12px;
+  color: white;
+  animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>

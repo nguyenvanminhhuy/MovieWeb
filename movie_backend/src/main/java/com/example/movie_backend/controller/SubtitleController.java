@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/subtitles")
@@ -25,7 +26,7 @@ public class SubtitleController {
 
     @Operation(summary = "Thêm phụ đề mới")
     @PostMapping
-    ApiResponse<SubtitleResponse> create(@RequestBody SubtitleRequest request) {
+    ApiResponse<SubtitleResponse> create(@RequestBody @Valid SubtitleRequest request) {
         return ApiResponse.<SubtitleResponse>builder()
                 .result(subtitleService.create(request))
                 .build();

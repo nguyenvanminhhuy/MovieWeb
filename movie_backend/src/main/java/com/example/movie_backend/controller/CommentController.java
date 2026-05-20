@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/comments")
@@ -36,7 +37,7 @@ public class CommentController {
     @Operation(summary = "Viết bình luận mới")
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    ApiResponse<CommentResponse> create(@RequestBody CommentRequest request) {
+    ApiResponse<CommentResponse> create(@RequestBody @Valid CommentRequest request) {
         return ApiResponse.<CommentResponse>builder()
                 .result(commentService.create(request))
                 .build();

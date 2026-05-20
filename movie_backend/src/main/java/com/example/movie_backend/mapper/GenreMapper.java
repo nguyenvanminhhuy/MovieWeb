@@ -9,6 +9,8 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface GenreMapper {
     Genre toGenre(GenreRequest request);
+
     GenreResponse toGenreResponse(Genre genre);
+
     void updateGenre(@MappingTarget Genre genre, GenreRequest request);
 }

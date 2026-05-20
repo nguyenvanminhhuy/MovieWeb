@@ -22,6 +22,18 @@ public enum ErrorCode {
     EPISODE_NOT_FOUND(1014, "Episode not found", HttpStatus.NOT_FOUND),
     COMMENT_NOT_FOUND(1015, "Comment not found", HttpStatus.NOT_FOUND),
     ROLE_NOT_FOUND(1016, "Role not found", HttpStatus.NOT_FOUND),
+    MOVIE_ID_REQUIRED(1017, "Movie ID is required", HttpStatus.BAD_REQUEST),
+    CONTENT_REQUIRED(1018, "Content is required", HttpStatus.BAD_REQUEST),
+    EMAIL_REQUIRED(1019, "Email is required", HttpStatus.BAD_REQUEST),
+    USERNAME_REQUIRED(1020, "Username is required", HttpStatus.BAD_REQUEST),
+    PASSWORD_REQUIRED(1021, "Password is required", HttpStatus.BAD_REQUEST),
+    EPISODE_ID_REQUIRED(1022, "Episode ID is required", HttpStatus.BAD_REQUEST),
+    PROGRESS_INVALID(1023, "Progress must be between 0 and 100", HttpStatus.BAD_REQUEST),
+    RATING_INVALID(1024, "Rating must be between 1 and 10", HttpStatus.BAD_REQUEST),
+    TITLE_REQUIRED(1025, "Title is required", HttpStatus.BAD_REQUEST),
+    DESCRIPTION_REQUIRED(1026, "Description is required", HttpStatus.BAD_REQUEST),
+    EPISODE_NUMBER_INVALID(1027, "Episode number is invalid", HttpStatus.BAD_REQUEST),
+    NAME_REQUIRED(1028, "Name is required", HttpStatus.BAD_REQUEST),
     ;
 
     ErrorCode(int code, String message, HttpStatusCode statusCode) {
