@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/video-sources")
@@ -25,7 +26,7 @@ public class VideoSourceController {
 
     @Operation(summary = "Thêm nguồn video mới")
     @PostMapping
-    ApiResponse<VideoSourceResponse> create(@RequestBody VideoSourceRequest request) {
+    ApiResponse<VideoSourceResponse> create(@RequestBody @Valid VideoSourceRequest request) {
         return ApiResponse.<VideoSourceResponse>builder()
                 .result(videoSourceService.create(request))
                 .build();

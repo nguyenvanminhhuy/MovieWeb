@@ -9,6 +9,8 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface FranchiseMapper {
     Franchise toFranchise(FranchiseRequest request);
+
     FranchiseResponse toFranchiseResponse(Franchise franchise);
+
     void updateFranchise(@MappingTarget Franchise franchise, FranchiseRequest request);
 }

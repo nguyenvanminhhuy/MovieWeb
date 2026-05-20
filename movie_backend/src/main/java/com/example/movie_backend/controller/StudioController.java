@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/studios")
@@ -24,7 +25,7 @@ public class StudioController {
 
     @Operation(summary = "Tạo mới studio")
     @PostMapping
-    ApiResponse<StudioResponse> create(@RequestBody StudioRequest request) {
+    ApiResponse<StudioResponse> create(@RequestBody @Valid StudioRequest request) {
         return ApiResponse.<StudioResponse>builder()
                 .result(studioService.create(request))
                 .build();
@@ -42,7 +43,7 @@ public class StudioController {
 
     @Operation(summary = "Cập nhật studio")
     @PutMapping("/{id}")
-    ApiResponse<StudioResponse> update(@PathVariable String id, @RequestBody StudioRequest request) {
+    ApiResponse<StudioResponse> update(@PathVariable String id, @RequestBody @Valid StudioRequest request) {
         return ApiResponse.<StudioResponse>builder()
                 .result(studioService.update(id, request))
                 .build();

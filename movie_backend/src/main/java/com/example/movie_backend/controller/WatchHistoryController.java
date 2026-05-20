@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/history")
@@ -22,7 +23,7 @@ public class WatchHistoryController {
 
     @Operation(summary = "Lưu tiến trình xem phim")
     @PostMapping
-    ApiResponse<Void> saveProgress(@RequestBody WatchHistoryRequest request) {
+    ApiResponse<Void> saveProgress(@RequestBody @Valid WatchHistoryRequest request) {
         watchHistoryService.saveProgress(request);
         return ApiResponse.<Void>builder().build();
     }

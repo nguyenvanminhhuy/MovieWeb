@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/genres")
@@ -24,7 +25,7 @@ public class GenreController {
 
     @Operation(summary = "Tạo mới thể loại")
     @PostMapping
-    ApiResponse<GenreResponse> create(@RequestBody GenreRequest request) {
+    ApiResponse<GenreResponse> create(@RequestBody @Valid GenreRequest request) {
         return ApiResponse.<GenreResponse>builder()
                 .result(genreService.create(request))
                 .build();
@@ -42,7 +43,7 @@ public class GenreController {
 
     @Operation(summary = "Cập nhật thể loại")
     @PutMapping("/{id}")
-    ApiResponse<GenreResponse> update(@PathVariable String id, @RequestBody GenreRequest request) {
+    ApiResponse<GenreResponse> update(@PathVariable String id, @RequestBody @Valid GenreRequest request) {
         return ApiResponse.<GenreResponse>builder()
                 .result(genreService.update(id, request))
                 .build();

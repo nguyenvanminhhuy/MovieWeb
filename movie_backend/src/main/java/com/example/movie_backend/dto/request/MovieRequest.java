@@ -15,7 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MovieRequest {
-    @NotBlank(message = "TITLE_INVALID")
+    @NotBlank(message = "TITLE_REQUIRED")
     String title;
     String originalTitle;
     String description;

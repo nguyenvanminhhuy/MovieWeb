@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.util.Set;
+import jakarta.validation.constraints.NotBlank;
 
 @Data
 @Builder
@@ -11,6 +12,7 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoleRequest {
+    @NotBlank(message = "NAME_REQUIRED")
     String name;
     String description;
     Set<String> permissions;
